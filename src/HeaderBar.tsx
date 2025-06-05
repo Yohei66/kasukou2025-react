@@ -15,7 +15,6 @@ import {
   Typography,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import SvgIcon from "@mui/material/SvgIcon";
 import React from "react";
 import styles from "./HeaderBar.module.css";
 import { Link } from "react-router-dom";

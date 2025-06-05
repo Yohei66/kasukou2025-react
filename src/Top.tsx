@@ -1,7 +1,5 @@
-import React from "react";
 import styles from "./Top.module.css";
-import { Typography, Box } from "@mui/material";
-import Container from "@mui/material/Container";
+import { Typography } from "@mui/material";
 
 const Top = () => {
   return (

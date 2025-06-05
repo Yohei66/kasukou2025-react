@@ -7,7 +7,6 @@ import {
   Typography,
 } from "@mui/material";
 import { green } from "@mui/material/colors";
-import React from "react";
 
 const Activity = () => {
   const greenBack = green[700];

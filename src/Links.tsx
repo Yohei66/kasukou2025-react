@@ -1,5 +1,4 @@
 import { Container, Link, Typography } from "@mui/material";
-import React from "react";
 
 const linkList = [
   { title: "春日部市テニス協会", url: "https://www.k-t-a.org/" },

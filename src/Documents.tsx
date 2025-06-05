@@ -4,10 +4,8 @@ import {
   AccordionSummary,
   Button,
   Container,
-  Link,
   Typography,
 } from "@mui/material";
-import React from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const pdfList = [
