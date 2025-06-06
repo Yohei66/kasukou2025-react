@@ -2,12 +2,18 @@
   "name": "kasukou2025-react",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://Yohei66.github.io/kasukou2025-react",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+     "rm": "rm -rf docs",
+    "mv": "mv build docs",
+    "git": "git add . && git commit && git push origin master",
+    "deploy": "npm run rm && npm run build && npm run mv && npm run git"
+
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
