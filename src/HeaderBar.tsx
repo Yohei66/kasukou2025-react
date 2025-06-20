@@ -13,11 +13,13 @@ import {
   ListItemText,
   Toolbar,
   Typography,
+  useTheme,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import React from "react";
 import styles from "./HeaderBar.module.css";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom"; // ← useLocationを追加
+import KasukouMarkG from "./assets/images/kasukoumarkG.jpg"; // Adjust the path as necessary
 
 interface Props {
   /**
@@ -28,45 +30,55 @@ interface Props {
 }
 
 const drawerWidth = 240;
-// const navItems = [
-//   "活動内容",
-//   "伝言板",
-//   "コート予約",
-//   "行事予定表",
-//   "ドキュメント",
-//   "リンク",
-// ];
 
 const navItems = [
   { label: "活動内容", path: "/activity" },
-  { label: "伝言板", path: "/bulletin" },
+  { label: "伝言板", path: "https://kasukabekoshiki.bbs.fc2.com/" },
   { label: "コート予約", path: "/court" },
   { label: "行事予定表", path: "/schedule" },
-  { label: "ドキュメント", path: "/documentss" },
+  { label: "ドキュメント", path: "/documents" },
   { label: "リンク", path: "/links" },
+  { label: "管理者", path: "/login" },
 ];
 
 export const HeaderBar = (props: Props) => {
+  const theme = useTheme(); // MUIのテーマを取得
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const location = useLocation(); // ← 追加
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
   };
 
+  const isSelected = (path: string) => {
+    // 外部リンクは選択状態にしない
+    if (path.startsWith("http")) return false;
+    return location.pathname === path;
+  };
+
   const drawer = (
-    <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>
+    <Box onClick={handleDrawerToggle} sx={{}}>
       <Typography variant="h6" sx={{ my: 2 }}>
-        MUI
+        春日部硬式テニスクラブ
       </Typography>
       <Divider />
-      <List>
+      <List sx={{ textAlign: "end" }}>
         {navItems.map((item) => (
           <ListItem key={item.label} disablePadding>
             <ListItemButton
-              sx={{ textAlign: "center" }}
-              component={Link}
-              to={item.path}
+              sx={{
+                textAlign: "center",
+                backgroundColor: isSelected(item.path) ? "#e0e0e0" : "inherit", // 選択時の色
+              }}
+              component={item.path.startsWith("http") ? "a" : Link}
+              to={!item.path.startsWith("http") ? item.path : undefined}
+              href={item.path.startsWith("http") ? item.path : undefined}
+              target={item.path.startsWith("http") ? "_blank" : undefined}
+              rel={
+                item.path.startsWith("http") ? "noopener noreferrer" : undefined
+              }
+              className={isSelected(item.path) ? styles.selected : ""}
             >
               <ListItemText primary={item.label} />
             </ListItemButton>
@@ -80,32 +92,37 @@ export const HeaderBar = (props: Props) => {
     window !== undefined ? () => window().document.body : undefined;
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "space-around",
+      }}
+    >
       <CssBaseline />
       <AppBar component="nav" sx={{ backgroundColor: "#ffffff" }}>
-        <Toolbar>
+        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <IconButton
-            color="inherit"
+            color="primary"
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
+            sx={{ mr: 2, display: { sm: "none" } }}
           >
             <MenuIcon />
           </IconButton>
           <Link to="/">
             <Container sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <img
-                src="src/assets/images/kasukoumarkG.jpg"
+                src={KasukouMarkG}
                 alt="test"
                 className={styles.kasukoumarkG}
               />
               <Typography
                 variant="h6"
-                component="div"
                 sx={{
                   flexGrow: 1,
                   display: { xs: "none", sm: "block" },
-                  color: "#000000",
+                  color: theme.palette.primary.main,
                 }}
               >
                 春日部硬式テニスクラブ
@@ -116,9 +133,23 @@ export const HeaderBar = (props: Props) => {
             {navItems.map((item) => (
               <Button
                 key={item.label}
-                sx={{ color: "#000000" }}
-                component={Link}
-                to={item.path}
+                sx={{
+                  // color: "#c31616",
+                  backgroundColor: isSelected(item.path)
+                    ? "#e0e0e0"
+                    : "inherit", // 選択時の色
+                  fontWeight: isSelected(item.path) ? "bold" : "normal",
+                }}
+                component={item.path.startsWith("http") ? "a" : Link}
+                to={!item.path.startsWith("http") ? item.path : undefined}
+                href={item.path.startsWith("http") ? item.path : undefined}
+                target={item.path.startsWith("http") ? "_blank" : undefined}
+                rel={
+                  item.path.startsWith("http")
+                    ? "noopener noreferrer"
+                    : undefined
+                }
+                className={isSelected(item.path) ? styles.selected : ""}
               >
                 {item.label}
               </Button>

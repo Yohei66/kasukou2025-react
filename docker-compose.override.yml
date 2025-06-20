@@ -1,0 +1,17 @@
+# docker-compose.override.yml
+version: "3.8"
+services:
+  # React 開発サーバー
+  node:
+    command: sh -c "npm install && npm run dev"    # ← npm install は済んでる前提
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/var/www/react/src
+      - ./package.json:/var/www/react/package.json
+      - ./vite.config.ts:/var/www/react/vite.config.ts
+      - /var/www/react/node_modules
+
+  # nginx は不要 → コメントアウト or スケールダウン
+  nginx:
+    scale: 0

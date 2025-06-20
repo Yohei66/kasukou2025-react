@@ -9,9 +9,7 @@ const Links = () => {
   return (
     <>
       <Typography variant="h6">リンク</Typography>
-      <Container
-        sx={{ mt: 2, mb: 2, gap: 1, display: "flex", flexDirection: "column" }}
-      >
+      <Container sx={{ gap: 1, display: "flex", flexDirection: "column" }}>
         {linkList.map((link, index) => (
           <Link key={index} href={link.url} target="_blank" rel="noopener">
             {link.title}

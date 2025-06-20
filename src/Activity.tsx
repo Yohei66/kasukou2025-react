@@ -5,10 +5,12 @@ import {
   TableHead,
   TableRow,
   Typography,
+  useTheme,
 } from "@mui/material";
 import { green } from "@mui/material/colors";
 
 const Activity = () => {
+  const theme = useTheme();
   const greenBack = green[700];
   return (
     <>
@@ -29,10 +31,20 @@ const Activity = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
+              <TableCell
+                sx={{
+                  backgroundColor: theme.palette.primary.main,
+                  color: "white",
+                }}
+              >
                 区分
               </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
+              <TableCell
+                sx={{
+                  backgroundColor: theme.palette.primary.main,
+                  color: "white",
+                }}
+              >
                 内容
               </TableCell>
               <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
