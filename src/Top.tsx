@@ -5,15 +5,13 @@ import {
   Card,
   CardContent,
   Grid,
-  Icon,
   useTheme,
 } from "@mui/material";
-import TopPicture from "./assets/images/TopPicture.png"; // Adjust the path as necessary
-import pic1 from "./assets/images/test_320x160.png"; // Adjust the path as necessary
-import PaymentIcon from "@mui/icons-material/Payment";
+// Adjust the path as necessary
+// Adjust the path as necessary
 import PaymentsIcon from "@mui/icons-material/Payments";
-import { BarChart, PieChart } from "@mui/x-charts";
-import { classData, valueFormatter } from "./dataset/classData.ts"; // Adjusts the path as necessary
+import { PieChart } from "@mui/x-charts";
+// Adjusts the path as necessary
 import { memberData } from "./dataset/memberData.ts"; // Adjusts the path as necessary
 import { memberCategory } from "./dataset/memberCategory.ts";
 import { Swiper, SwiperSlide } from "swiper/react";

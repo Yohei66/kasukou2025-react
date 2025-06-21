@@ -1,6 +1,5 @@
 import "./App.css";
 import {
-  colors,
   Container,
   createTheme,
   CssBaseline,
@@ -14,7 +13,6 @@ import Links from "./Links";
 import Documents from "./Documents";
 import Court from "./Court";
 import Schedule from "./Schedule";
-import { useEffect, useState } from "react";
 import Login from "./Login";
 import Admin from "./Admin";
 import RequireAuth from "./RequireAuth";
@@ -25,22 +23,6 @@ type Response = {
 };
 
 function App() {
-  const [data, setData] = useState<Response | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/hello.php")
-      .then((res) => {
-        if (!res.ok) throw new Error(res.statusText);
-        return res.json();
-      })
-      .then((json) => setData(json))
-      .catch((err) => setError(err.message));
-  }, []);
-
-  if (error) return <div>エラー: {error}</div>;
-  if (!data) return <div>ロード中…</div>;
-
   const theme = createTheme({
     palette: {
       primary: {
@@ -107,10 +89,6 @@ function App() {
               gap: 5,
             }}
           >
-            {data.message}
-            <br />
-            {data.time}
-
             <Routes>
               <Route path="/" element={<Top />} />
               <Route path="/activity" element={<Activity />} />

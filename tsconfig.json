@@ -1,7 +1,31 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ]
+  "compilerOptions": {
+    // トランスパイルはせず型チェックのみ
+    "noEmit": true,
+    "skipLibCheck": true,
+
+    // ESNext モジュール／ターゲットにして Vite の import.meta.glob を許可
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowImportingTsExtensions": true,
+
+ "types": ["vite/client"],  
+
+    // React 17+ の自動 JSX
+    "jsx": "react-jsx",
+
+    // default import を便利に使う
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    // 未使用ローカル変数／パラメータはエラーにしない
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+
+    // 拡張子指定インポートを許可（.ts/.tsx）
+    "resolveJsonModule": true
+  },
+  "include": ["src", "global.d.ts"],
+  "exclude": ["node_modules", "dist", "src/**/*.d.ts"]
 }
