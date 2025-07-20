@@ -26,23 +26,25 @@ function App() {
   const theme = createTheme({
     palette: {
       primary: {
-        main: "#00897b", // Primary color
+        main: "#0e995a", // Primary color
       },
       secondary: {
         main: "#fff176", // Secondary color
       },
       background: {
         default: "#f5f5f5", // Default background color
+        paper: "#ffffff", // Paper background color
       },
       text: {
         primary: "#000000", // Primary text color
         secondary: "#555555", // Secondary text color
+        disabled: "#bdbdbd", // Disabled text color
       },
       action: {
         active: "#126e65b5", // Active color for actions
         hover: "#890000", // Hover color for actions
         hoverOpacity: 0.08, // Opacity for hover actions
-        selected: "#136c63", // Selected color for actions
+        selected: "#d6e5e4", // Selected color for actions
         selectedOpacity: 0.08, // Opacity for selected actions
         disabled: "#bdbdbd", // Disabled color for actions
         disabledOpacity: 0.38, // Opacity for disabled actions
@@ -80,13 +82,15 @@ function App() {
           <CssBaseline />
           <HeaderBar />
           <Container
-            maxWidth="lg"
+            // maxWidth="lg"
             sx={{
               mt: 9,
               display: "flex",
               flexDirection: "column",
               justifyContent: "start",
               gap: 5,
+              width: "100vw",
+              maxWidth: "100%",
             }}
           >
             <Routes>

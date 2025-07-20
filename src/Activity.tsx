@@ -29,36 +29,21 @@ const Activity = () => {
       >
         <Typography variant="h6">日曜一般レッスン</Typography>
         <Table>
-          <TableHead>
+          <TableHead
+            sx={{
+              backgroundColor: theme.palette.primary.main,
+              "& .MuiTableCell-head": {
+                color: "white",
+              },
+            }}
+          >
             <TableRow>
-              <TableCell
-                sx={{
-                  backgroundColor: theme.palette.primary.main,
-                  color: "white",
-                }}
-              >
-                区分
-              </TableCell>
-              <TableCell
-                sx={{
-                  backgroundColor: theme.palette.primary.main,
-                  color: "white",
-                }}
-              >
-                内容
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                対象
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                場所
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                曜日
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                時間
-              </TableCell>
+              <TableCell>区分</TableCell>
+              <TableCell>内容</TableCell>
+              <TableCell>対象</TableCell>
+              <TableCell>場所</TableCell>
+              <TableCell>曜日</TableCell>
+              <TableCell>時間</TableCell>
             </TableRow>
           </TableHead>
           <TableRow>
@@ -88,26 +73,21 @@ const Activity = () => {
       >
         <Typography variant="h6">平日一般レッスン</Typography>
         <Table>
-          <TableHead>
+          <TableHead
+            sx={{
+              backgroundColor: theme.palette.primary.main,
+              "& .MuiTableCell-head": {
+                color: "white",
+              },
+            }}
+          >
             <TableRow>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                区分
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                内容
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                対象
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                場所
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                曜日
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                時間
-              </TableCell>
+              <TableCell>区分</TableCell>
+              <TableCell>内容</TableCell>
+              <TableCell>対象</TableCell>
+              <TableCell>場所</TableCell>
+              <TableCell>曜日</TableCell>
+              <TableCell>時間</TableCell>
             </TableRow>
           </TableHead>
           <TableRow>
@@ -148,26 +128,21 @@ const Activity = () => {
       >
         <Typography variant="h6">ジュニア一般レッスン</Typography>
         <Table>
-          <TableHead>
+          <TableHead
+            sx={{
+              backgroundColor: theme.palette.primary.main,
+              "& .MuiTableCell-head": {
+                color: "white",
+              },
+            }}
+          >
             <TableRow>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                区分
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                内容
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                対象
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                場所
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                曜日
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                時間
-              </TableCell>
+              <TableCell>区分</TableCell>
+              <TableCell>内容</TableCell>
+              <TableCell>対象</TableCell>
+              <TableCell>場所</TableCell>
+              <TableCell>曜日</TableCell>
+              <TableCell>時間</TableCell>
             </TableRow>
           </TableHead>
           <TableRow>
@@ -210,28 +185,30 @@ const Activity = () => {
         sx={{ mt: 2, mb: 2, gap: 2, display: "flex", flexDirection: "column" }}
       >
         <Table>
-          <TableHead>
+          <TableHead
+            sx={{
+              backgroundColor: theme.palette.primary.main,
+              "& .MuiTableCell-head": {
+                color: "white",
+              },
+            }}
+          >
             <TableRow>
               <TableCell></TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                火
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                水
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                木・金
-              </TableCell>
-              <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
-                土・日・祝
-              </TableCell>
-              <TableCell
-                sx={{ backgroundColor: greenBack, color: "white" }}
-              ></TableCell>
+              <TableCell>火</TableCell>
+              <TableCell>水</TableCell>
+              <TableCell>木・金</TableCell>
+              <TableCell>土・日・祝</TableCell>
+              <TableCell></TableCell>
             </TableRow>
           </TableHead>
           <TableRow>
-            <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
+            <TableCell
+              sx={{
+                backgroundColor: theme.palette.primary.main,
+                color: "white",
+              }}
+            >
               場所
             </TableCell>
             <TableCell>立沼コート</TableCell>
@@ -241,7 +218,12 @@ const Activity = () => {
             <TableCell>大沼コート</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
+            <TableCell
+              sx={{
+                backgroundColor: theme.palette.primary.main,
+                color: "white",
+              }}
+            >
               時間
             </TableCell>
             <TableCell>12:00~17:00</TableCell>
@@ -251,7 +233,12 @@ const Activity = () => {
             <TableCell>9:00~17:00</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell sx={{ backgroundColor: greenBack, color: "white" }}>
+            <TableCell
+              sx={{
+                backgroundColor: theme.palette.primary.main,
+                color: "white",
+              }}
+            >
               備考
             </TableCell>
             <TableCell>ー</TableCell>

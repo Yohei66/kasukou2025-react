@@ -1,3 +1,13 @@
+# Docker
+以下のコマンドを実行することで、各種サーバーが起動されます
+```
+docker-compose down
+　
+docker-compose up -d
+
+docker-compose logs -f node
+```
+
 # Notion
 
 https://www.notion.so/210be2fea8a380dd9fd4cc8bb127904b?v=210be2fea8a381f5aee3000c988ea8b4&source=copy_link

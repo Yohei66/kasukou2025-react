@@ -20,6 +20,7 @@ services:
     working_dir: /var/www/api
     volumes:
       - ./api:/var/www/api
+      - ./public:/var/www/html/public
     command: php -S 0.0.0.0:9000 -t /var/www/api
     ports:
       - "9000:9000"

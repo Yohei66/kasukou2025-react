@@ -21,14 +21,20 @@ import styles from "./HeaderBar.module.css";
 import { Link, useLocation } from "react-router-dom"; // ← useLocationを追加
 import KasukouMarkG from "./assets/images/kasukoumarkG.jpg"; // Adjust the path as necessary
 
-interface Props {
-  /**
-   * Injected by the documentation to work in an iframe.
-   * You won't need it on your project.
-   */
+// interface Props {
+//   /**
+//    * Injected by the documentation to work in an iframe.
+//    * You won't need it on your project.
+//    */
+//   window?: () => Window;
+//   isAdmin?: boolean;
+//   onLogout?: () => void;
+// }
+type Props = {
+  isAdmin?: boolean;
+  onLogout?: () => void;
   window?: () => Window;
-}
-
+};
 const drawerWidth = 240;
 
 const navItems = [
@@ -43,7 +49,7 @@ const navItems = [
 
 export const HeaderBar = (props: Props) => {
   const theme = useTheme(); // MUIのテーマを取得
-  const { window } = props;
+  const { window, isAdmin, onLogout } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const location = useLocation(); // ← 追加
 
@@ -58,7 +64,7 @@ export const HeaderBar = (props: Props) => {
   };
 
   const drawer = (
-    <Box onClick={handleDrawerToggle} sx={{}}>
+    <Box onClick={handleDrawerToggle}>
       <Typography variant="h6" sx={{ my: 2 }}>
         春日部硬式テニスクラブ
       </Typography>
@@ -98,8 +104,7 @@ export const HeaderBar = (props: Props) => {
         justifyContent: "space-around",
       }}
     >
-      <CssBaseline />
-      <AppBar component="nav" sx={{ backgroundColor: "#ffffff" }}>
+      <AppBar component="nav" sx={{ backgroundColor: "white" }}>
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <IconButton
             color="primary"
@@ -136,7 +141,7 @@ export const HeaderBar = (props: Props) => {
                 sx={{
                   // color: "#c31616",
                   backgroundColor: isSelected(item.path)
-                    ? "#e0e0e0"
+                    ? theme.palette.action.selected // 選択時の色
                     : "inherit", // 選択時の色
                   fontWeight: isSelected(item.path) ? "bold" : "normal",
                 }}
@@ -154,6 +159,7 @@ export const HeaderBar = (props: Props) => {
                 {item.label}
               </Button>
             ))}
+            {isAdmin && <Button onClick={onLogout}>ログアウト</Button>}
           </Box>
         </Toolbar>
       </AppBar>

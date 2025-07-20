@@ -1,11 +1,27 @@
-import { Paper, Table, TableCell, TableHead, TableRow } from "@mui/material";
+import {
+  Paper,
+  Table,
+  TableCell,
+  TableHead,
+  TableRow,
+  useTheme,
+} from "@mui/material";
 import React from "react";
 
 const Schedule = () => {
+  const theme = useTheme();
+
   return (
     <>
       <Table component={Paper}>
-        <TableHead>
+        <TableHead
+          sx={{
+            backgroundColor: theme.palette.primary.main,
+            "& .MuiTableCell-head": {
+              color: "white",
+            },
+          }}
+        >
           <TableRow>
             <TableCell>日付</TableCell>
             <TableCell>曜日</TableCell>

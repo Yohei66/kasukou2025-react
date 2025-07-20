@@ -13,14 +13,15 @@ import PaymentsIcon from "@mui/icons-material/Payments";
 import { PieChart } from "@mui/x-charts";
 // Adjusts the path as necessary
 import { memberData } from "./dataset/memberData.ts"; // Adjusts the path as necessary
-import { memberCategory } from "./dataset/memberCategory.ts";
+import useMemberCategory from "./dataset/memberCategory.ts";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
-
+import { Link } from "react-router-dom";
+const memberCategory = useMemberCategory;
 const chartSetting = {
   xAxis: [{}],
 };
@@ -162,7 +163,7 @@ const Top = () => {
                 </Typography>
                 {(() => {
                   // Calculate total value for percentage calculation
-                  const pieData = memberCategory.map((item) => ({
+                  const pieData = memberCategory().map((item) => ({
                     value: item.value,
                     label: item.category,
                     color: item.color,
@@ -303,9 +304,20 @@ const Top = () => {
       <Typography variant="subtitle1" color="black" sx={{ ml: 2 }}>
         月曜以外のほぼ毎日、春日部市のテニスコートで活動しています。
         <br />
-        20代～70代まで、老若男女問わず、100人近い会員が在籍しています。
+        ジュニア・20代～70代まで、老若男女問わず、100人近い会員が在籍しています。
         <br />
-        当クラブの活動内容についてはこちらから
+        当クラブの活動内容については
+        <Link
+          to="/activity"
+          style={{
+            color: theme.palette.primary.main,
+            textDecoration: "none",
+            cursor: "pointer",
+          }}
+        >
+          こちら
+        </Link>
+        から
       </Typography>
     </>
   );
