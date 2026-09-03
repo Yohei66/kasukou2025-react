@@ -21,6 +21,7 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 import { Link } from "react-router-dom";
+import TodayCourts from "./TodayCourts";
 const memberCategory = useMemberCategory;
 const chartSetting = {
   xAxis: [{}],
@@ -73,6 +74,9 @@ const Top = () => {
             ));
           })()}
         </Swiper>
+      </Container>
+      <Container>
+        <TodayCourts />
       </Container>
       {/* <img src={TopPicture} alt="" className={styles.TopPicture} /> */}
       {/* <Typography

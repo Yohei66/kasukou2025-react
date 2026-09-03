@@ -12,80 +12,87 @@ import {
   ButtonGroup,
   useTheme,
   Container,
+  Chip,
+  Tooltip,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import Papa from "papaparse";
-import { useEffect, useState } from "react";
-
-type RowData = {
-  日付: string;
-  曜日: string;
-  コート: string;
-  "9-11": string;
-  "11-13": string;
-  "13-15": string;
-  "15-17": string;
-  備考: string;
-};
-
-function getCurrentMonth() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth() + 1;
-  return `${y}${String(m).padStart(2, "0")}`;
-}
-
-function getPrevMonth(yyyymm: string) {
-  const y = Number(yyyymm.slice(0, 4));
-  const m = Number(yyyymm.slice(4, 6));
-  const prev = m === 1 ? [y - 1, 12] : [y, m - 1];
-  return `${prev[0]}${String(prev[1]).padStart(2, "0")}`;
-}
-
-function getNextMonth(yyyymm: string) {
-  const y = Number(yyyymm.slice(0, 4));
-  const m = Number(yyyymm.slice(4, 6));
-  const next = m === 12 ? [y + 1, 1] : [y, m + 1];
-  return `${next[0]}${String(next[1]).padStart(2, "0")}`;
-}
-
-const COURT_TYPES = [
-  { label: "大沼", value: "Onuma" },
-  { label: "立沼", value: "Tatenuma" },
-];
+import { useCallback, useEffect, useState } from "react";
+import CancelDialog from "./CancelDialog";
+import {
+  cancelKey,
+  COURT_TYPES,
+  fetchCancellations,
+  fetchCourtRows,
+  getCurrentMonth,
+  getNextMonth,
+  getPrevMonth,
+  isUsableSlot,
+  TIME_SLOTS,
+  type CancelTarget,
+  type Cancellation,
+  type CourtType,
+  type RowData,
+  type TimeSlot,
+} from "./courtCancel";
 
 const Court = () => {
   const [month, setMonth] = useState(getCurrentMonth());
   const [rows, setRows] = useState<RowData[]>([]);
   const [rowCounts, setRowCounts] = useState<Record<string, number>>({});
-  const [courtType, setCourtType] = useState<"Onuma" | "Tatenuma">("Onuma");
+  const [courtType, setCourtType] = useState<CourtType>("Onuma");
+  // キャンセル情報（key: cancelKey()）
+  const [cancellations, setCancellations] = useState<
+    Record<string, Cancellation>
+  >({});
+  // キャンセル／取り消しダイアログの対象枠
+  const [target, setTarget] = useState<CancelTarget | null>(null);
 
   useEffect(() => {
-    fetch(`/courts/${courtType}/${month}.csv`)
-      .then((response) => {
-        if (!response.ok) throw new Error("CSVが見つかりません");
-        return response.text();
-      })
-      .then((csvText) => {
-        Papa.parse<RowData>(csvText, {
-          header: true,
-          skipEmptyLines: true,
-          complete: ({ data }) => {
-            setRows(data);
-            const counts: Record<string, number> = {};
-            data.forEach((r) => {
-              counts[r["日付"]] = (counts[r["日付"]] || 0) + 1;
-            });
-            setRowCounts(counts);
-          },
-        });
-      })
-      .catch(() => {
-        setRows([]);
-        setRowCounts({});
+    let ignore = false;
+    fetchCourtRows(courtType, month).then((data) => {
+      if (ignore) return;
+      setRows(data);
+      const counts: Record<string, number> = {};
+      data.forEach((r) => {
+        counts[r["日付"]] = (counts[r["日付"]] || 0) + 1;
       });
+      setRowCounts(counts);
+    });
+    return () => {
+      ignore = true;
+    };
   }, [month, courtType]);
+
+  const loadCancellations = useCallback(() => {
+    fetchCancellations({ courtType, month }).then(setCancellations);
+  }, [courtType, month]);
+
+  useEffect(() => {
+    loadCancellations();
+  }, [loadCancellations]);
+
+  const openDialog = (row: RowData, slot: TimeSlot) => {
+    setTarget({
+      courtType,
+      month,
+      dateLabel: row["日付"],
+      dayOfWeek: row["曜日"],
+      court: row["コート"],
+      timeSlot: slot,
+    });
+  };
+
+  const targetCancellation = target
+    ? cancellations[
+        cancelKey(
+          target.courtType,
+          target.dateLabel,
+          target.court,
+          target.timeSlot
+        )
+      ]
+    : undefined;
 
   const theme = useTheme();
   return (
@@ -117,7 +124,7 @@ const Court = () => {
               <Button
                 key={ct.value}
                 color={courtType === ct.value ? "primary" : "inherit"}
-                onClick={() => setCourtType(ct.value as "Onuma" | "Tatenuma")}
+                onClick={() => setCourtType(ct.value)}
               >
                 {ct.label}
               </Button>
@@ -147,6 +154,10 @@ const Court = () => {
         </Container>
       </Container>
 
+      <Typography variant="body2" color="text.secondary" sx={{ px: 2 }}>
+        雨天・熱中症アラート等で中止する場合は、該当する時間帯のマスを押してください。
+      </Typography>
+
       <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
         <Table stickyHeader>
           <TableHead>
@@ -162,10 +173,9 @@ const Court = () => {
               <TableCell>日付</TableCell>
               <TableCell>曜日</TableCell>
               <TableCell>コート</TableCell>
-              <TableCell>9-11</TableCell>
-              <TableCell>11-13</TableCell>
-              <TableCell>13-15</TableCell>
-              <TableCell>15-17</TableCell>
+              {TIME_SLOTS.map((slot) => (
+                <TableCell key={slot}>{slot}</TableCell>
+              ))}
               <TableCell>備考</TableCell>
             </TableRow>
           </TableHead>
@@ -180,6 +190,7 @@ const Court = () => {
                 let dayColor = undefined;
                 if (row["曜日"] === "日") dayColor = "red";
                 else if (row["曜日"] === "土") dayColor = "blue";
+
                 return (
                   <TableRow key={idx}>
                     {isFirstOfDate && (
@@ -195,10 +206,58 @@ const Court = () => {
                       {row["曜日"]}
                     </TableCell>
                     <TableCell>{row["コート"]}</TableCell>
-                    <TableCell>{row["9-11"]}</TableCell>
-                    <TableCell>{row["11-13"]}</TableCell>
-                    <TableCell>{row["13-15"]}</TableCell>
-                    <TableCell>{row["15-17"]}</TableCell>
+                    {TIME_SLOTS.map((slot) => {
+                      const cancelled =
+                        cancellations[
+                          cancelKey(courtType, date, row["コート"], slot)
+                        ];
+                      const usable = isUsableSlot(row[slot]);
+
+                      // 大会等でクラブが使えない枠はキャンセル対象外
+                      if (!usable) {
+                        return (
+                          <TableCell key={slot} sx={{ color: "text.disabled" }}>
+                            {row[slot]}
+                          </TableCell>
+                        );
+                      }
+
+                      if (cancelled) {
+                        return (
+                          <TableCell
+                            key={slot}
+                            onClick={() => openDialog(row, slot)}
+                            sx={{
+                              cursor: "pointer",
+                              backgroundColor: theme.palette.action.selected,
+                            }}
+                          >
+                            <Tooltip
+                              title={`理由: ${cancelled.reason || "（未記入）"} / キャンセル者: ${cancelled.canceller} / ${cancelled.cancelled_at}　押すと取り消せます`}
+                            >
+                              <Chip label="中止" color="error" size="small" />
+                            </Tooltip>
+                          </TableCell>
+                        );
+                      }
+
+                      return (
+                        <TableCell
+                          key={slot}
+                          onClick={() => openDialog(row, slot)}
+                          sx={{
+                            cursor: "pointer",
+                            "&:hover": {
+                              backgroundColor: theme.palette.action.selected,
+                            },
+                          }}
+                        >
+                          <Tooltip title="押すとこの枠をキャンセルできます">
+                            <span>{row[slot]}</span>
+                          </Tooltip>
+                        </TableCell>
+                      );
+                    })}
                     {isFirstOfDate && (
                       <TableCell rowSpan={rowCounts[date]}>
                         {row["備考"]}
@@ -211,6 +270,13 @@ const Court = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <CancelDialog
+        target={target}
+        cancelled={targetCancellation}
+        onClose={() => setTarget(null)}
+        onDone={loadCancellations}
+      />
     </>
   );
 };

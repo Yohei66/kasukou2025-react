@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# パスワードを含むサーバー設定
+api/config.php
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
