@@ -12,6 +12,7 @@
  */
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
+require_once 'config_load.php';
 require_once 'db.php';
 require_once 'courts_common.php';
 
@@ -66,12 +67,12 @@ if ($method !== 'POST') {
 }
 
 // ---- 更新（合言葉が必要） ------------------------------------------------
-$password = (string)(getenv('CANCEL_PASSWORD') ?: '');
+$password = config_value('CANCEL_PASSWORD');
 if ($password === '') {
     send_json([
         'ok' => false,
         'error' => 'config_missing',
-        'message' => '合言葉が未設定です。環境変数 CANCEL_PASSWORD を設定してください。',
+        'message' => '合言葉が未設定です。config.php または環境変数 CANCEL_PASSWORD を設定してください。',
     ], 500);
 }
 

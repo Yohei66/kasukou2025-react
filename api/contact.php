@@ -12,6 +12,7 @@
  */
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
+require_once 'config_load.php';
 require_once 'db.php';
 require_once 'courts_common.php';
 
@@ -137,8 +138,8 @@ try {
 }
 
 // ---- メール通知 ----
-$to = (string)(getenv('CONTACT_TO') ?: '');
-$from = (string)(getenv('CONTACT_FROM') ?: '');
+$to = config_value('CONTACT_TO');
+$from = config_value('CONTACT_FROM');
 $sent = false;
 
 if ($to !== '' && $from !== '') {

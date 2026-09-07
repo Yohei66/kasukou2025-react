@@ -25,3 +25,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# 本番・試験サーバー用の設定ファイル（パスワードを含む。Gitに入れない）
+api/config.php
+config.php
