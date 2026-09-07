@@ -18,6 +18,9 @@ services:
     build: ./api
     container_name: dev-php
     environment:
+      # 管理者ログイン（1人だけ）。本番はサーバー側で設定し、この既定値は使わないこと
+      ADMIN_USER: ${ADMIN_USER:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-kasukou-dev}
       # コート中止連絡の合言葉。本番はサーバー側で設定し、この値は使わないこと
       CANCEL_PASSWORD: ${CANCEL_PASSWORD:-kasukou-dev}
       # 問い合わせフォームの通知先と差出人。両方そろって初めてメールを送る

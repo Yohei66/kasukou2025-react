@@ -21,6 +21,10 @@
 header('Content-Type: application/json; charset=utf-8');
 require_once 'db.php';
 require_once 'courts_common.php';
+require_once 'admin_guard.php';
+
+// 予約データの洗い替えは管理者だけ。ログインしていなければ 401 で止める
+admin_require_login();
 
 /** 4枠ぶんの値を取り出す。不足分は空文字で埋める */
 function normalize_slots($raw): array
