@@ -78,7 +78,29 @@ const Hero = () => (
     )}
 
     <Box sx={{ position: "relative", pt: { xs: 7, md: 9.5 } }}>
-      <Container sx={{ maxWidth: `${layout.maxWidth}px !important`, px: 3 }}>
+      <Container
+        sx={{
+          maxWidth: `${layout.maxWidth}px !important`,
+          px: 3,
+          // 入場アニメーション。スクロール待ちにせず、マウント直後に再生する。
+          // 直下の要素を少しずつ遅らせて、上から順に浮き上がって見せる。
+          "@keyframes heroRise": {
+            from: { opacity: 0, transform: "translateY(14px)" },
+            to: { opacity: 1, transform: "none" },
+          },
+          "& > *": {
+            opacity: 0,
+            animation: "heroRise .6s ease forwards",
+          },
+          "& > *:nth-of-type(1)": { animationDelay: ".05s" },
+          "& > *:nth-of-type(2)": { animationDelay: ".15s" },
+          "& > *:nth-of-type(3)": { animationDelay: ".25s" },
+          "& > *:nth-of-type(4)": { animationDelay: ".35s" },
+          "@media (prefers-reduced-motion: reduce)": {
+            "& > *": { opacity: 1, animation: "none" },
+          },
+        }}
+      >
         <Typography
           component="span"
           sx={{

@@ -2,6 +2,7 @@ import { Box, Typography } from "@mui/material";
 import Section from "./top/Section";
 import SectionHead from "./top/SectionHead";
 import WeeklySchedule from "./top/WeeklySchedule";
+import Reveal from "./top/Reveal";
 import { fonts, getCourtColor, tokens } from "./top/tokens";
 import {
   belongings,
@@ -157,10 +158,13 @@ const Activity = () => (
     </Section>
 
     {/* 週間スケジュール。「今日は何時からやっているか」を引くための表 */}
-    <WeeklySchedule />
+    <Reveal>
+      <WeeklySchedule />
+    </Reveal>
 
     {/* 各種レッスン */}
-    <Section id="lessons">
+    <Reveal>
+      <Section id="lessons">
       <SectionHead
         eyebrow="各種レッスン"
         heading="レベルと曜日で選べる、7つのクラス"
@@ -204,10 +208,12 @@ const Activity = () => (
           </Box>
         );
       })}
-    </Section>
+      </Section>
+    </Reveal>
 
     {/* ダブルスゲーム */}
-    <Section band id="doubles">
+    <Reveal>
+      <Section band id="doubles">
       <SectionHead
         eyebrow="ダブルスゲーム"
         heading="都合のつく日に、来て、打つ。"
@@ -301,10 +307,12 @@ const Activity = () => (
       <Typography sx={{ mt: 2.5, fontSize: ".9rem", color: tokens.muted }}>
         コートが確保できているかは日によって変わります。当日の状況はトップページの「本日のコート予約状況」でご確認ください。
       </Typography>
-    </Section>
+      </Section>
+    </Reveal>
 
     {/* 持ち物・服装 */}
-    <Section id="belongings">
+    <Reveal>
+      <Section id="belongings">
       <SectionHead
         eyebrow="はじめて参加する方へ"
         heading="持ち物と服装"
@@ -340,7 +348,8 @@ const Activity = () => (
           </Box>
         ))}
       </Box>
-    </Section>
+      </Section>
+    </Reveal>
   </>
 );
 
