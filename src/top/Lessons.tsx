@@ -19,7 +19,7 @@ const Lessons = () => (
   <Section id="lessons">
     <SectionHead
       eyebrow="レッスン"
-      heading="レベルと曜日で選べる、7つのクラス"
+      heading="レベルと曜日別で7つのクラスがあります"
       description="レッスン料は無料です。自分のレベルや参加できる曜日・時間に合わせて、好きなコースに参加できます。"
     />
 

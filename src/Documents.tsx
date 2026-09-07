@@ -2,32 +2,47 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Alert,
+  Box,
   Button,
+  CircularProgress,
   Container,
   Typography,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import Kiyaku from "./pdfs/kiyaku20240601.pdf"; // クラブ規約のPDFファイルをインポート
-import Nyuukai from "./pdfs/nyuukaitodoke202503.pdf"; // 入部届けのPDFファイルをインポート
-import Seiyaku from "./pdfs/seiyakusho2021.pdf"; // ジュニア誓約書のPDFファイルをインポート
-import Kyuubu from "./pdfs/kyuubutodoke202503.pdf"; // 休退復部届けのPDFファイルをインポート
-import Manner from "./pdfs/tennis_manner.pdf"; // クラブ細部マナー事項のPDFファイルをインポート
-const pdfList = [
-  { id: 1, title: "クラブ規約", url: Kiyaku },
-  { id: 2, title: "入部届け", url: Nyuukai },
-  { id: 3, title: "ジュニア誓約書", url: Seiyaku },
-  { id: 4, title: "休退復部届け", url: Kyuubu },
-  {
-    id: 5,
-    title: "クラブ運営のアンケート結果",
-    url: "src/pdfs/2015_questionnaire.pdf",
-  },
-  { id: 6, title: "クラブ細部マナー事項", url: Manner },
-];
+import { useEffect, useState } from "react";
+import {
+  documentUrl,
+  fetchDocuments,
+  type ClubDocument,
+} from "./dataset/content";
+
 const Documents = () => {
+  const [documents, setDocuments] = useState<ClubDocument[] | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+    fetchDocuments()
+      .then((rows) => alive && setDocuments(rows))
+      .catch(() => alive && setError("ドキュメントを読み込めませんでした。"));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  if (error) return <Alert severity="error">{error}</Alert>;
+  if (!documents) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
-    <Container sx={{ width: "900px" }}>
-      {pdfList.map((pdf) => (
+    <Container sx={{ width: "900px", maxWidth: "100%" }}>
+      {documents.map((pdf) => (
         <Accordion key={pdf.id}>
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
@@ -39,19 +54,27 @@ const Documents = () => {
           <AccordionDetails>
             {/* 簡易プレビュー：embed タグを使う例 */}
             <embed
-              src={pdf.url}
+              src={documentUrl(pdf)}
               type="application/pdf"
               width="100%"
               height="500px"
             />
-            <Button variant="outlined" sx={{ mt: 2 }} href={pdf.url} download>
+            <Button
+              variant="outlined"
+              sx={{ mt: 2 }}
+              href={documentUrl(pdf)}
+              download={pdf.originalName}
+            >
               ダウンロード
             </Button>
           </AccordionDetails>
         </Accordion>
       ))}
-      {/* 選択ダウンロード機能 */}
-      {/* 一括ダウンロード機能 */}
+      {documents.length === 0 && (
+        <Typography sx={{ color: "text.secondary" }}>
+          ドキュメントはまだ登録されていません。
+        </Typography>
+      )}
     </Container>
   );
 };

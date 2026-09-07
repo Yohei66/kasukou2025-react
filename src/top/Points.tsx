@@ -18,13 +18,7 @@ const Points = () => (
   <Section band>
     <SectionHead
       eyebrow="はじめての方へ"
-      heading={
-        <>
-          「うまくないと入れない」
-          <br />
-          クラブではありません。
-        </>
-      }
+      heading="初心者から、気軽に始められます。"
     />
     <Grid container spacing={2.5} sx={{ mt: 3.5 }}>
       {points.map((p) => {

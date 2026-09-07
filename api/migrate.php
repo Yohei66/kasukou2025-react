@@ -63,4 +63,88 @@ $pdo->exec("
         DROP COLUMN IF EXISTS `preferred_days`
 ");
 
+// 行事予定表。1行=1行事のシンプルな構成。
+// 曜日は日付から求められるので持たない（編集時に日付と食い違うのを防ぐ）。
+$pdo->exec("
+    CREATE TABLE IF NOT EXISTS events (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        `event_date` DATE NOT NULL,
+        `title` VARCHAR(100) NOT NULL,
+        `place` VARCHAR(50) NOT NULL DEFAULT '',
+        KEY idx_event_date (`event_date`)
+    )
+");
+
+// ドキュメント（PDF）。実体は api/public/documents/ に置き、ここには名前だけを持つ。
+// sort_order は画面に出す順番。同値なら id 順。
+$pdo->exec("
+    CREATE TABLE IF NOT EXISTS documents (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        `title` VARCHAR(100) NOT NULL,
+        `file_name` VARCHAR(255) NOT NULL,
+        `original_name` VARCHAR(255) NOT NULL DEFAULT '',
+        `sort_order` INT NOT NULL DEFAULT 0,
+        `created_at` DATETIME NOT NULL,
+        KEY idx_sort (`sort_order`)
+    )
+");
+
+// 外部サイトへのリンク集。
+$pdo->exec("
+    CREATE TABLE IF NOT EXISTS links (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        `title` VARCHAR(100) NOT NULL,
+        `url` VARCHAR(500) NOT NULL,
+        `sort_order` INT NOT NULL DEFAULT 0,
+        KEY idx_sort (`sort_order`)
+    )
+");
+
+/**
+ * 初期データの投入。
+ * DB 化する前に画面へベタ書きされていた内容を、テーブルが空のときだけ入れる。
+ * 管理画面で消した項目が復活しないよう、必ず件数を見てから入れること。
+ */
+function seed_if_empty(PDO $pdo, string $table, string $sql, array $rows): void
+{
+    if ((int)$pdo->query("SELECT COUNT(*) FROM `$table`")->fetchColumn() > 0) {
+        return;
+    }
+    $stmt = $pdo->prepare($sql);
+    foreach ($rows as $row) {
+        $stmt->execute($row);
+    }
+}
+
+// ドキュメントの初期値。PDF の実体は api/public/documents/ に同名で置いてある
+$seedDocuments = [
+    ['クラブ規約', 'kiyaku20240601.pdf'],
+    ['入部届け', 'nyuukaitodoke202503.pdf'],
+    ['ジュニア誓約書', 'seiyakusho2021.pdf'],
+    ['休退復部届け', 'kyuubutodoke202503.pdf'],
+    ['クラブ運営のアンケート結果', '2015_questionnaire.pdf'],
+    ['クラブ細部マナー事項', 'tennis_manner.pdf'],
+];
+$documentRows = [];
+foreach ($seedDocuments as $i => $doc) {
+    $documentRows[] = [$doc[0], $doc[1], $doc[1], ($i + 1) * 10, date('Y-m-d H:i:s')];
+}
+seed_if_empty(
+    $pdo,
+    'documents',
+    'INSERT INTO documents (`title`, `file_name`, `original_name`, `sort_order`, `created_at`) VALUES (?, ?, ?, ?, ?)',
+    $documentRows
+);
+
+seed_if_empty(
+    $pdo,
+    'links',
+    'INSERT INTO links (`title`, `url`, `sort_order`) VALUES (?, ?, ?)',
+    [
+        ['春日部市テニス協会', 'https://www.k-t-a.org/', 10],
+        ['埼玉県テニス協会', 'https://sta-tennis.org/', 20],
+        ['日本女子テニス連盟埼玉県支部', 'https://jltf-saitama.org/', 30],
+    ]
+);
+
 echo json_encode(['success' => true, 'message' => 'マイグレーション完了']);

@@ -8,7 +8,7 @@ const Steps = () => (
   <Section>
     <SectionHead
       eyebrow="入会までの流れ"
-      heading="まずは、見学だけでも。"
+      heading="まずは見学だけでも。"
       description="いきなり入会を決める必要はありません。一度コートに来て、雰囲気を見てから決めていただけます。"
     />
     <Grid container spacing={2.5} sx={{ mt: 3.5 }}>

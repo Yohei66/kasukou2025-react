@@ -54,7 +54,7 @@ const ContactCta = () => (
         variant="h2"
         sx={{ fontSize: "clamp(1.6rem,4vw,2.4rem)", color: "#fff" }}
       >
-        コートで、お待ちしています。
+        コートでお待ちしています。
       </Typography>
       <Typography sx={{ color: "#B9D3C5", maxWidth: "34em" }}>
         見学・体験のお申し込み、クラブへのご質問は、お問い合わせフォームからお気軽にどうぞ。

@@ -8,8 +8,8 @@ const Gallery = () => (
   <Section band>
     <SectionHead
       eyebrow="クラブの様子"
-      heading="コートでは、こんな時間が流れています"
-      description="ここは写真の掲載枠です。撮影した写真に差し替えると、そのままギャラリーになります。枠の中は撮影メモです。"
+      heading="実際の活動の様子です"
+      description=" "
     />
     <Grid container spacing={2.5} sx={{ mt: 3.5 }}>
       {photoSlots.map((slot) => (

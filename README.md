@@ -41,13 +41,17 @@ VITE v6.x  ready in xxx ms
 ブラウザで **http://localhost:3000** を開いてください。
 
 ### 4. DBテーブルの初期化（初回のみ）
-`courts` テーブルを作成します。
+`courts` / `cancellations` / `inquiries` / `events` / `documents` / `links` テーブルを作成します。
 
 ```bash
 curl http://localhost:9000/migrate.php
 ```
 
 `{"success":true,"message":"マイグレーション完了"}` が返れば成功です。
+
+`events` / `documents` / `links` は管理画面から編集する内容です。
+`documents` と `links` は、テーブルが空のときだけ初期値（従来ページにベタ書きしていた内容）が入ります。
+何度実行しても既存データは消えません。
 
 ### 5. 停止
 
