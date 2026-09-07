@@ -119,17 +119,10 @@ function App() {
             {/* 固定 AppBar 分の余白 */}
             <Toolbar />
             <Routes>
-              {/* トップと問い合わせは全幅レイアウトのため Container を挟まない */}
+              {/* トップ・活動内容・問い合わせは全幅レイアウトのため Container を挟まない */}
               <Route path="/" element={<Top />} />
               <Route path="/contact" element={<Contact />} />
-              <Route
-                path="/activity"
-                element={
-                  <PageContainer>
-                    <Activity />
-                  </PageContainer>
-                }
-              />
+              <Route path="/activity" element={<Activity />} />
               <Route
                 path="/documents"
                 element={

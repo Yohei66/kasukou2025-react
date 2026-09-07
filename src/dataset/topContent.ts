@@ -36,41 +36,7 @@ export type DaySchedule = {
   activities: DayActivity[];
 };
 
-// ダブルスゲームが週6日、レッスンはそのうち4日に重ねて実施
-// コート別の内訳は活動内容ページに委ねている
-export const weekSchedule: DaySchedule[] = [
-  {
-    day: "日",
-    activities: [
-      { kind: "doubles", time: "10:30–17:00" },
-      { kind: "lesson", time: "9:00–13:00" },
-    ],
-  },
-  { day: "月", rest: true, activities: [] },
-  {
-    day: "火",
-    activities: [
-      { kind: "doubles", time: "12:00–17:00" },
-      { kind: "lesson", time: "10:00–12:00" },
-    ],
-  },
-  {
-    day: "水",
-    activities: [
-      { kind: "doubles", time: "9:00–13:00" },
-      { kind: "lesson", time: "9:30–11:30" },
-    ],
-  },
-  { day: "木", activities: [{ kind: "doubles", time: "9:00–13:00" }] },
-  {
-    day: "金",
-    activities: [
-      { kind: "doubles", time: "9:00–13:00" },
-      { kind: "lesson", time: "13:00–15:00" },
-    ],
-  },
-  { day: "土", activities: [{ kind: "doubles", time: "9:00–17:00" }] },
-];
+// 実体は lessons / doubles から組み立てる（このファイル下部を参照）
 
 // ---- はじめての方へ ----
 export type PointIcon = "tennis" | "payment" | "calendar";
@@ -112,63 +78,252 @@ export const checklist = [
 ];
 
 // ---- レッスン ----
+// トップページ（要約）と活動内容ページ（詳細）の両方がこの配列を参照する。
+// クラスの増減はここだけ直せば両方に反映される。
+export type LessonGroupKey = "sunday" | "weekday" | "junior";
+
 export type Lesson = {
+  group: LessonGroupKey;
   name: string;
+  /** 誰が対象か（一般男女／主に女性／小学生など） */
   target: string;
+  /** トップページ用の短い説明 */
+  summary: string;
+  /** 活動内容ページ用の詳しい説明 */
+  description: string;
   day: string;
   time: string;
   court: string;
 };
 
+export const lessonGroups: { key: LessonGroupKey; title: string }[] = [
+  { key: "sunday", title: "日曜一般レッスン" },
+  { key: "weekday", title: "平日一般レッスン" },
+  { key: "junior", title: "ジュニアレッスン" },
+];
+
 export const lessons: Lesson[] = [
   {
+    group: "sunday",
     name: "初・中級",
-    target: "一般男女／初めての人、やさしいラリーができる程度の人",
+    target: "一般男女",
+    summary: "初めての人、やさしいラリーができる程度の人",
+    description:
+      "初めての人、やさしいラリーができる程度の人を対象に、テニスの基本を練習します。",
     day: "日",
     time: "10:30–13:00",
     court: "立沼",
   },
   {
+    group: "sunday",
     name: "中級",
-    target: "一般男女／ゲームのフォーメーションまで",
+    target: "一般男女",
+    summary: "ゲームのフォーメーションまで",
+    description:
+      "基本的なテニス技術のレベルアップを図るとともに、ゲームに必要なフォーメーションなどを練習します。",
     day: "日",
     time: "9:00–10:30",
     court: "大沼",
   },
   {
+    group: "weekday",
     name: "初級",
-    target: "主に女性／テニスの基本を練習します",
+    target: "主に女性",
+    summary: "テニスの基本を練習します",
+    description:
+      "初めての人、やさしいラリーができる程度の人を対象に、テニスの基本を練習します。",
     day: "火",
     time: "10:00–12:00",
     court: "立沼",
   },
   {
+    group: "weekday",
     name: "中級",
-    target: "主に女性／基本技術のレベルアップ",
+    target: "主に女性",
+    summary: "基本技術のレベルアップ",
+    description:
+      "基本的なテニス技術のレベルアップを図るとともに、ゲームに必要なフォーメーションなどを練習します。",
     day: "水",
     time: "9:30–11:30",
     court: "立沼",
   },
   {
+    group: "weekday",
     name: "実戦クラス",
-    target: "女性／セオリーと状況判断で実戦力を養う",
+    target: "女性",
+    summary: "セオリーと状況判断で実戦力を養う",
+    description:
+      "ゲームにおけるセオリーや、各種状況に応じた対処法などを主体とした練習で、実戦力を養います。",
     day: "金",
     time: "13:00–15:00",
     court: "大沼",
   },
   {
+    group: "junior",
     name: "ジュニアA",
-    target: "小学2年生以上／ボールに慣れ、基本フォームを習得",
+    target: "小学2年生以上（コーチが承認した1年生を含む）",
+    summary: "ボールに慣れ、基本フォームを習得",
+    description:
+      "ボールに慣れることから始め、基本フォームの習得を目指します。あわせて運動能力の向上や、やり遂げる強い意志力を養います。",
     day: "日",
     time: "9:00–10:30",
     court: "立沼",
   },
   {
+    group: "junior",
     name: "ジュニアB",
-    target: "小学2年生以上／基本の充実とゲームの実戦",
+    target: "小学2年生以上（コーチが承認した1年生を含む）",
+    summary: "基本の充実とゲームの実戦",
+    description:
+      "基本フォームの充実や、ゲームの基本を練習します。ゲームも取り入れ、実戦力も養います。",
     day: "日",
     time: "9:00–10:30",
     court: "立沼",
+  },
+];
+
+// ---- ダブルスゲーム ----
+// 曜日ごとに1件として持つ。ここから「週間スケジュール（曜日軸）」と
+// 「コート別の一覧」の両方を組み立てるので、書く場所はこの配列だけ。
+export type Weekday = "日" | "月" | "火" | "水" | "木" | "金" | "土";
+
+/** 祝日は曜日に関係なく土曜と同じ扱いになるため、別の区分として持つ */
+export type ScheduleDay = Weekday | "祝";
+
+export const WEEKDAYS: Weekday[] = ["日", "月", "火", "水", "木", "金", "土"];
+
+const SCHEDULE_DAY_ORDER: ScheduleDay[] = [...WEEKDAYS, "祝"];
+
+export type DoublesEntry = {
+  day: ScheduleDay;
+  court: string;
+  time: string;
+  note?: string;
+};
+
+export const doubles: DoublesEntry[] = [
+  { day: "日", court: "立沼", time: "12:00–17:00", note: "午前はレッスン" },
+  { day: "日", court: "大沼", time: "10:30–17:00", note: "午前はレッスン／12:00–13:00は初級者優先" },
+  { day: "火", court: "立沼", time: "12:00–17:00" },
+  { day: "水", court: "立沼", time: "9:00–13:00", note: "1面はレッスンに使用" },
+  { day: "木", court: "大沼", time: "9:00–13:00" },
+  { day: "金", court: "大沼", time: "9:00–13:00" },
+  { day: "土", court: "立沼", time: "9:00–17:00" },
+  { day: "土", court: "大沼", time: "9:00–17:00", note: "12:00–13:00は初級者優先" },
+  // 祝日は曜日にかかわらず土曜と同じ扱い。月曜が祝日の場合も朝から実施する。
+  // 祝日はレッスンを行わず、ダブルスゲームのみ。
+  { day: "祝", court: "立沼", time: "9:00–17:00" },
+  { day: "祝", court: "大沼", time: "9:00–17:00", note: "12:00–13:00は初級者優先" },
+];
+
+/** コート別に並べ替えたダブルスの一覧 */
+export const doublesByCourt = ["立沼", "大沼"].map((court) => ({
+  court,
+  slots: doubles
+    .filter((d) => d.court === court)
+    .sort(
+      (a, b) =>
+        SCHEDULE_DAY_ORDER.indexOf(a.day) - SCHEDULE_DAY_ORDER.indexOf(b.day)
+    ),
+}));
+
+// ---- 週間スケジュール（曜日軸） ----
+// 「今日は何時からやっているか」を引くための表。lessons と doubles から組み立てる。
+export type DayActivityDetail = {
+  kind: "lesson" | "doubles";
+  time: string;
+  /** レッスンならクラス名、ダブルスなら備考 */
+  detail: string;
+};
+
+export type DayColumn = { court: string; items: DayActivityDetail[] };
+
+const columnsFor = (day: ScheduleDay): DayColumn[] =>
+  ["立沼", "大沼"].map((court) => {
+    const items: DayActivityDetail[] = [];
+
+    // 同じ時間帯のレッスンはクラス名をまとめて1行にする
+    const dayLessons = lessons.filter((l) => l.day === day && l.court === court);
+    const byTime = new Map<string, string[]>();
+    dayLessons.forEach((l) => {
+      byTime.set(l.time, [...(byTime.get(l.time) ?? []), l.name]);
+    });
+    [...byTime.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .forEach(([time, names]) =>
+        items.push({ kind: "lesson", time, detail: names.join("・") })
+      );
+
+    doubles
+      .filter((d) => d.day === day && d.court === court)
+      .forEach((d) =>
+        items.push({ kind: "doubles", time: d.time, detail: d.note ?? "" })
+      );
+
+    return { court, items };
+  });
+
+export const weeklySchedule: { day: Weekday; columns: DayColumn[] }[] =
+  WEEKDAYS.map((day) => ({ day, columns: columnsFor(day) }));
+
+/**
+ * 祝日の行。曜日とは別枠で表の末尾に出す。
+ * 月曜が祝日の場合も朝から活動するため、「月曜＝休み」だけでは誤りになる。
+ */
+export const holidaySchedule = { day: "祝日" as const, columns: columnsFor("祝") };
+
+// ---- ふだんの一週間（トップページのヒーロー下） ----
+// 曜日ごとに「ダブルスは何時から何時まで」「レッスンは何時から何時まで」を
+// lessons / doubles の実データから割り出す。手書きしないので食い違いが起きない。
+const toMinutes = (hhmm: string) => {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+};
+
+/** 複数の時間帯をまとめて「最も早い開始–最も遅い終了」にする */
+const spanOf = (times: string[]): string | null => {
+  if (times.length === 0) return null;
+  const ranges = times.map((t) => t.split("–"));
+  const start = ranges
+    .map((r) => r[0])
+    .sort((a, b) => toMinutes(a) - toMinutes(b))[0];
+  const end = ranges
+    .map((r) => r[1])
+    .sort((a, b) => toMinutes(b) - toMinutes(a))[0];
+  return `${start}–${end}`;
+};
+
+export const weekSchedule: DaySchedule[] = WEEKDAYS.map((day) => {
+  const activities: DayActivity[] = [];
+  const doublesSpan = spanOf(doubles.filter((d) => d.day === day).map((d) => d.time));
+  const lessonSpan = spanOf(lessons.filter((l) => l.day === day).map((l) => l.time));
+  // ダブルスを先に置き、週の土台であることが見た目に出るようにする
+  if (doublesSpan) activities.push({ kind: "doubles", time: doublesSpan });
+  if (lessonSpan) activities.push({ kind: "lesson", time: lessonSpan });
+  return activities.length > 0 ? { day, activities } : { day, rest: true, activities: [] };
+});
+
+export const doublesIntro =
+  "親睦を主な目的として、会員どうしのダブルスゲームを楽しんでいます。老若男女、在勤の方から退職された方、初心者からベテランまで在籍しているため、全員でコートの確保に努め、それぞれの都合に合わせていつでもテニスが楽しめるようにしています。レッスンを受けている方も自由に参加できます。";
+
+// ---- 持ち物・服装 ----
+// TODO: クラブの実情に合わせて内容をご確認ください
+export const belongings = [
+  {
+    title: "服装",
+    body: "動きやすい服装でお越しください。ジャージやスポーツウェアで十分です。",
+  },
+  {
+    title: "靴",
+    body: "運動靴をご用意ください。テニスシューズがあれば理想ですが、はじめは普通の運動靴でも構いません。",
+  },
+  {
+    title: "ラケット",
+    body: "見学・体験のあいだは貸し出しできます。入会後にご自身のものを揃えてください。",
+  },
+  {
+    title: "その他",
+    body: "飲み物とタオルをお持ちください。夏場は帽子もあると安心です。",
   },
 ];
 

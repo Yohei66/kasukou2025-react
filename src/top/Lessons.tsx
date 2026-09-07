@@ -76,7 +76,7 @@ const Lessons = () => (
                   borderColor: tokens.line,
                 }}
               >
-                {l.target}
+                {l.target}／{l.summary}
               </TableCell>
               <TableCell sx={{ verticalAlign: "top", borderColor: tokens.line }}>
                 <Box
