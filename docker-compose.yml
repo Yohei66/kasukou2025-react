@@ -20,6 +20,9 @@ services:
     environment:
       # コート中止連絡の合言葉。本番はサーバー側で設定し、この値は使わないこと
       CANCEL_PASSWORD: ${CANCEL_PASSWORD:-kasukou-dev}
+      # 問い合わせフォームの通知先と差出人。両方そろって初めてメールを送る
+      CONTACT_TO: ${CONTACT_TO:-}
+      CONTACT_FROM: ${CONTACT_FROM:-}
     working_dir: /var/www/api
     volumes:
       - ./api:/var/www/api

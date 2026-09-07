@@ -1,8 +1,8 @@
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Button, Container, Typography } from "@mui/material";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
+import { Link } from "react-router-dom";
 import CourtLines from "./CourtLines";
 import { fonts, layout, tokens } from "./tokens";
-import { CONTACT_EMAIL } from "../dataset/topContent";
 
 const ContactCta = () => (
   <Box
@@ -57,32 +57,34 @@ const ContactCta = () => (
         コートで、お待ちしています。
       </Typography>
       <Typography sx={{ color: "#B9D3C5", maxWidth: "34em" }}>
-        見学・体験のお申し込み、クラブへのご質問は、こちらのメールアドレスまでお気軽にどうぞ。
+        見学・体験のお申し込み、クラブへのご質問は、お問い合わせフォームからお気軽にどうぞ。
+        数日以内に担当者からご返信します。
       </Typography>
-      <Box
-        component="a"
-        href={`mailto:${CONTACT_EMAIL}`}
+      {/* 迷惑メール収集を避けるため、メールアドレスはページに出さずフォームへ誘導する */}
+      <Button
+        component={Link}
+        to="/contact"
+        startIcon={<MailOutlineIcon />}
         sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 1.5,
-          mt: 0.75,
-          fontFamily: fonts.data,
-          fontSize: "clamp(1.1rem,3.2vw,1.55rem)",
-          fontWeight: 600,
-          letterSpacing: ".04em",
-          color: tokens.ball,
-          textDecoration: "none",
-          borderBottom: "1.5px solid rgba(216,230,74,.45)",
-          pb: "6px",
-          wordBreak: "break-all",
-          transition: "border-color .18s ease",
-          "&:hover": { borderBottomColor: tokens.ball },
+          mt: 1,
+          fontFamily: fonts.display,
+          fontWeight: 700,
+          fontSize: "1rem",
+          px: 4,
+          py: 1.75,
+          borderRadius: 999,
+          backgroundColor: tokens.ball,
+          color: "#0A2A1C",
+          transition: "transform .18s ease, background-color .18s ease",
+          "&:hover": {
+            backgroundColor: tokens.ballHover,
+            color: "#0A2A1C",
+            transform: "translateY(-2px)",
+          },
         }}
       >
-        <MailOutlineIcon sx={{ fontSize: 22 }} />
-        {CONTACT_EMAIL}
-      </Box>
+        見学・体験を申し込む
+      </Button>
     </Container>
   </Box>
 );

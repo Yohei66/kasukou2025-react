@@ -36,4 +36,31 @@ $pdo->exec("
     )
 ");
 
+// 見学・体験の問い合わせ。
+// メール送信に失敗しても内容が消えないよう、まず DB に保存してから送る。
+$pdo->exec("
+    CREATE TABLE IF NOT EXISTS inquiries (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        `name` VARCHAR(60) NOT NULL,
+        `email` VARCHAR(120) NOT NULL,
+        `topic` VARCHAR(20) NOT NULL DEFAULT '',
+        `experience` VARCHAR(40) NOT NULL DEFAULT '',
+        `preferred_dates` VARCHAR(120) NOT NULL DEFAULT '',
+        `message` TEXT NOT NULL,
+        `ip` VARCHAR(45) NOT NULL DEFAULT '',
+        `mail_sent` TINYINT NOT NULL DEFAULT 0,
+        `created_at` DATETIME NOT NULL,
+        KEY idx_created (`created_at`)
+    )
+");
+
+// 用件の追加と、参加できそうな曜日 → 参加希望日 への差し替え。
+// 既に作成済みのテーブルにも追従させる（MariaDB の IF NOT EXISTS / IF EXISTS を使用）
+$pdo->exec("
+    ALTER TABLE inquiries
+        ADD COLUMN IF NOT EXISTS `topic` VARCHAR(20) NOT NULL DEFAULT '' AFTER `email`,
+        ADD COLUMN IF NOT EXISTS `preferred_dates` VARCHAR(120) NOT NULL DEFAULT '' AFTER `experience`,
+        DROP COLUMN IF EXISTS `preferred_days`
+");
+
 echo json_encode(['success' => true, 'message' => 'マイグレーション完了']);

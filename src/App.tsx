@@ -18,6 +18,7 @@ import Documents from "./Documents";
 import Court from "./Court";
 import Schedule from "./Schedule";
 import Login from "./Login";
+import Contact from "./Contact";
 import Admin from "./Admin";
 import RequireAuth from "./RequireAuth";
 
@@ -118,8 +119,9 @@ function App() {
             {/* 固定 AppBar 分の余白 */}
             <Toolbar />
             <Routes>
-              {/* トップページはヒーローを全幅にするため Container を挟まない */}
+              {/* トップと問い合わせは全幅レイアウトのため Container を挟まない */}
               <Route path="/" element={<Top />} />
+              <Route path="/contact" element={<Contact />} />
               <Route
                 path="/activity"
                 element={
