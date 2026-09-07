@@ -1,4 +1,6 @@
 import {
+  Box,
+  Tooltip,
   Table,
   TableBody,
   TableCell,
@@ -15,10 +17,12 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import Papa from "papaparse";
 import { useEffect, useState } from "react";
+import { SLOT_LABELS, cancelSummary } from "./courtCommon";
+import type { CancelMap, SlotKey } from "./courtCommon";
 
 type RowData = {
+  id: number;
   日付: string;
   曜日: string;
   コート: string;
@@ -50,6 +54,17 @@ function getNextMonth(yyyymm: string) {
   return `${next[0]}${String(next[1]).padStart(2, "0")}`;
 }
 
+/** date_str（YYYY-MM-DD）を「7日」の形にする。旧形式の値はそのまま返す */
+function formatDay(dateStr: string) {
+  const m = /^\d{4}-\d{2}-(\d{2})$/.exec(dateStr);
+  return m ? `${Number(m[1])}日` : dateStr;
+}
+
+/** "202609" を cancel.php が受け取る "2026-09" にする */
+function toApiMonth(yyyymm: string) {
+  return `${yyyymm.slice(0, 4)}-${yyyymm.slice(4, 6)}`;
+}
+
 const COURT_TYPES = [
   { label: "大沼", value: "Onuma" },
   { label: "立沼", value: "Tatenuma" },
@@ -60,32 +75,36 @@ const Court = () => {
   const [rows, setRows] = useState<RowData[]>([]);
   const [rowCounts, setRowCounts] = useState<Record<string, number>>({});
   const [courtType, setCourtType] = useState<"Onuma" | "Tatenuma">("Onuma");
+  // 中止連絡。日付 → 場所 → 面 → 時間帯 の順に引ける
+  const [cancels, setCancels] = useState<CancelMap>({});
 
   useEffect(() => {
-    fetch(`/courts/${courtType}/${month}.csv`)
-      .then((response) => {
-        if (!response.ok) throw new Error("CSVが見つかりません");
-        return response.text();
+    fetch(`/api/courts_list.php?court_type=${courtType}&year_month=${month}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("データが見つかりません");
+        return res.json() as Promise<RowData[]>;
       })
-      .then((csvText) => {
-        Papa.parse<RowData>(csvText, {
-          header: true,
-          skipEmptyLines: true,
-          complete: ({ data }) => {
-            setRows(data);
-            const counts: Record<string, number> = {};
-            data.forEach((r) => {
-              counts[r["日付"]] = (counts[r["日付"]] || 0) + 1;
-            });
-            setRowCounts(counts);
-          },
+      .then((data) => {
+        setRows(data);
+        const counts: Record<string, number> = {};
+        data.forEach((r) => {
+          counts[r["日付"]] = (counts[r["日付"]] || 0) + 1;
         });
+        setRowCounts(counts);
       })
       .catch(() => {
         setRows([]);
         setRowCounts({});
       });
   }, [month, courtType]);
+
+  // 中止連絡は月単位でまとめて取得する。失敗しても予約状況の表示は続ける
+  useEffect(() => {
+    fetch(`/api/cancel.php?month=${toApiMonth(month)}`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error())))
+      .then((json) => setCancels(json?.ok ? (json.cancellations ?? {}) : {}))
+      .catch(() => setCancels({}));
+  }, [month]);
 
   const theme = useTheme();
   return (
@@ -184,7 +203,7 @@ const Court = () => {
                   <TableRow key={idx}>
                     {isFirstOfDate && (
                       <TableCell rowSpan={rowCounts[date]}>
-                        {row["日付"]}
+                        {formatDay(row["日付"])}
                       </TableCell>
                     )}
                     <TableCell
@@ -195,10 +214,39 @@ const Court = () => {
                       {row["曜日"]}
                     </TableCell>
                     <TableCell>{row["コート"]}</TableCell>
-                    <TableCell>{row["9-11"]}</TableCell>
-                    <TableCell>{row["11-13"]}</TableCell>
-                    <TableCell>{row["13-15"]}</TableCell>
-                    <TableCell>{row["15-17"]}</TableCell>
+                    {SLOT_LABELS.map((label, slot) => {
+                      const entry =
+                        cancels[date]?.[courtType]?.[row["コート"]]?.[`slot${slot}`];
+                      return (
+                        <TableCell
+                          key={label}
+                          sx={entry ? { backgroundColor: "#FBE9E7" } : undefined}
+                        >
+                          {entry ? (
+                            <Tooltip title={cancelSummary(entry)}>
+                              <Box
+                                component="span"
+                                sx={{
+                                  display: "inline-block",
+                                  fontSize: "0.75rem",
+                                  fontWeight: "bold",
+                                  color: "#fff",
+                                  backgroundColor: "#c0392b",
+                                  borderRadius: "4px",
+                                  px: 0.75,
+                                  py: "1px",
+                                  cursor: "help",
+                                }}
+                              >
+                                中止
+                              </Box>
+                            </Tooltip>
+                          ) : (
+                            row[label as SlotKey]
+                          )}
+                        </TableCell>
+                      );
+                    })}
                     {isFirstOfDate && (
                       <TableCell rowSpan={rowCounts[date]}>
                         {row["備考"]}

@@ -17,6 +17,9 @@ services:
   php:
     build: ./api
     container_name: dev-php
+    environment:
+      # コート中止連絡の合言葉。本番はサーバー側で設定し、この値は使わないこと
+      CANCEL_PASSWORD: ${CANCEL_PASSWORD:-kasukou-dev}
     working_dir: /var/www/api
     volumes:
       - ./api:/var/www/api

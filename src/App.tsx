@@ -1,10 +1,14 @@
 import "./App.css";
 import {
+  Box,
   Container,
   createTheme,
   CssBaseline,
   ThemeProvider,
+  Toolbar,
 } from "@mui/material";
+import type { ReactNode } from "react";
+import { fonts, tokens } from "./top/tokens";
 import { HeaderBar } from "./HeaderBar";
 import Top from "./Top";
 import { HashRouter, Route, Routes } from "react-router-dom";
@@ -22,6 +26,23 @@ type Response = {
   time: string;
 };
 
+/** トップページ以外の下層ページに共通の余白 */
+const PageContainer = ({ children }: { children: ReactNode }) => (
+  <Container
+    sx={{
+      mt: 2,
+      mb: 8,
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "start",
+      gap: 5,
+      maxWidth: "100%",
+    }}
+  >
+    {children}
+  </Container>
+);
+
 function App() {
   const theme = createTheme({
     palette: {
@@ -32,7 +53,7 @@ function App() {
         main: "#fff176", // Secondary color
       },
       background: {
-        default: "#f5f5f5", // Default background color
+        default: tokens.paper, // Default background color
         paper: "#ffffff", // Paper background color
       },
       text: {
@@ -53,6 +74,18 @@ function App() {
         focusOpacity: 0.12, // Opacity for focus actions
         activatedOpacity: 0.24, // Opacity for activated actions
       },
+    },
+    typography: {
+      fontFamily: fonts.body,
+      // 見出しは Zen Kaku Gothic New、本文は Noto Sans JP
+      h1: { fontFamily: fonts.display, fontWeight: 900 },
+      h2: { fontFamily: fonts.display, fontWeight: 900 },
+      h3: { fontFamily: fonts.display, fontWeight: 700 },
+      h4: { fontFamily: fonts.display, fontWeight: 700 },
+      h5: { fontFamily: fonts.display, fontWeight: 700 },
+      h6: { fontFamily: fonts.display, fontWeight: 700 },
+      body1: { lineHeight: 1.85 },
+      body2: { lineHeight: 1.8 },
     },
     components: {
       MuiButton: {
@@ -81,38 +114,73 @@ function App() {
           {/* <BrowserRouter> */}
           <CssBaseline />
           <HeaderBar />
-          <Container
-            // maxWidth="lg"
-            sx={{
-              mt: 9,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "start",
-              gap: 5,
-              width: "100vw",
-              maxWidth: "100%",
-            }}
-          >
+          <Box component="main" sx={{ width: "100%" }}>
+            {/* 固定 AppBar 分の余白 */}
+            <Toolbar />
             <Routes>
+              {/* トップページはヒーローを全幅にするため Container を挟まない */}
               <Route path="/" element={<Top />} />
-              <Route path="/activity" element={<Activity />} />
-              <Route path="/documents" element={<Documents />} />
-              <Route path="/links" element={<Links />} />
-              <Route path="/court" element={<Court />} />
-              <Route path="/schedule" element={<Schedule />} />
+              <Route
+                path="/activity"
+                element={
+                  <PageContainer>
+                    <Activity />
+                  </PageContainer>
+                }
+              />
+              <Route
+                path="/documents"
+                element={
+                  <PageContainer>
+                    <Documents />
+                  </PageContainer>
+                }
+              />
+              <Route
+                path="/links"
+                element={
+                  <PageContainer>
+                    <Links />
+                  </PageContainer>
+                }
+              />
+              <Route
+                path="/court"
+                element={
+                  <PageContainer>
+                    <Court />
+                  </PageContainer>
+                }
+              />
+              <Route
+                path="/schedule"
+                element={
+                  <PageContainer>
+                    <Schedule />
+                  </PageContainer>
+                }
+              />
               <Route
                 path="/admin"
                 element={
                   <RequireAuth>
-                    <Admin />
+                    <PageContainer>
+                      <Admin />
+                    </PageContainer>
                   </RequireAuth>
                 }
               />
-              <Route path="/login" element={<Login />} />
+              <Route
+                path="/login"
+                element={
+                  <PageContainer>
+                    <Login />
+                  </PageContainer>
+                }
+              />
               {/* ここに他のルートを追加 */}
-              <></>
             </Routes>
-          </Container>
+          </Box>
           {/* </BrowserRouter> */}
         </HashRouter>
       </ThemeProvider>
