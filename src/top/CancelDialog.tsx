@@ -209,7 +209,7 @@ const CancelDialog = ({ target, entry, onClose, onDone }: Props) => {
         />
 
         {message && (
-          <Typography sx={{ mt: 1.5, fontSize: ".85rem", color: "#c0392b" }}>
+          <Typography sx={{ mt: 1.5, fontSize: ".85rem", color: tokens.danger }}>
             {message}
           </Typography>
         )}
@@ -223,7 +223,7 @@ const CancelDialog = ({ target, entry, onClose, onDone }: Props) => {
             onClick={() => void submit("clear")}
             disabled={sending}
             variant="contained"
-            sx={{ backgroundColor: "#c0392b", "&:hover": { backgroundColor: "#a93226" } }}
+            sx={{ backgroundColor: tokens.danger, "&:hover": { backgroundColor: tokens.dangerDeep } }}
           >
             キャンセルを取り消す
           </Button>

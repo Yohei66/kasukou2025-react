@@ -20,6 +20,17 @@ export const tokens = {
   onCourtStrong: "#EAF2EC",
   courtLine: "#BFE8D2", // コートのライン
   lessonDot: "#7FD6A8",
+
+  /**
+   * 注意を引く赤。サイト内の赤はこの1色だけに絞る。
+   * 中止バッジ（白抜き）と日曜の曜日文字（白地）の両方で使う。
+   * 白地で 5.0:1、白抜きで 5.0:1 と、どちらの向きでも WCAG AA を満たす。
+   */
+  danger: "#C0392B",
+  dangerDeep: "#A93226", // 中止ボタンのホバー
+  dangerPale: "#FBE9E7", // 中止セルの背景
+  /** 土曜。日曜の赤と対になる青（白地で 6.4:1） */
+  saturday: "#1565C0",
 } as const;
 
 /**
@@ -40,6 +51,10 @@ export const getCourtColor = (name: string) =>
     pale: tokens.greenPale,
   };
 
+/** 曜日1文字から色を引く。平日は undefined（既定の文字色のまま） */
+export const getDayColor = (dow: string): string | undefined =>
+  dow === "日" ? tokens.danger : dow === "土" ? tokens.saturday : undefined;
+
 export const fonts = {
   display:
     '"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif',
@@ -51,4 +66,13 @@ export const fonts = {
 export const layout = {
   maxWidth: 1120,
   sectionPy: { xs: 7, md: 12 },
+} as const;
+
+/** カード・パネルの形。トップの各セクションが使っている値をここに集約 */
+export const shape = {
+  card: "14px", // カード（Points / Access / レッスン）
+  panel: "12px", // 表を包むパネル（TodayCourts）
+  chip: "6px", // ラベルチップ
+  /** カードの影。2段重ねで、輪郭を出しつつ浮かせすぎない */
+  shadow: "0 1px 2px rgba(18,33,27,.05),0 8px 24px -12px rgba(18,33,27,.18)",
 } as const;

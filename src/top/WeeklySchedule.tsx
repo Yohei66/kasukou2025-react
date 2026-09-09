@@ -140,7 +140,7 @@ const WeeklySchedule = () => {
                     fontFamily: fonts.display,
                     fontWeight: 700,
                     fontSize: isHoliday ? ".95rem" : "1.05rem",
-                    color: isRest ? tokens.muted : isHoliday ? "#C0392B" : tokens.ink,
+                    color: isRest ? tokens.muted : isHoliday ? tokens.danger : tokens.ink,
                   }}
                 >
                   {row.day}

@@ -2,22 +2,82 @@ import {
   Alert,
   Box,
   CircularProgress,
-  MenuItem,
-  Paper,
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
   TableRow,
-  TextField,
   Typography,
-  useTheme,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
-import { fetchEvents, formatEventDate, type ClubEvent } from "./dataset/content";
+import SectionHead from "./top/SectionHead";
+import Segmented from "./top/Segmented";
+import { fonts, getCourtColor, getDayColor, shape, tokens } from "./top/tokens";
+import {
+  fetchEvents,
+  formatEventDate,
+  type ClubEvent,
+} from "./dataset/content";
+
+/** 表のヘッダ行。塗りつぶしの緑＋白文字はコントラストが足りないので薄い緑地にする */
+const headCellSx = {
+  backgroundColor: tokens.greenPale,
+  borderBottom: `2px solid ${tokens.line}`,
+  fontFamily: fonts.display,
+  fontSize: "1.05rem",
+  fontWeight: 700,
+  color: tokens.ink,
+  whiteSpace: "nowrap" as const,
+  py: 1.75,
+};
+
+/** 本文セル。会員に高齢の方が多いため 1.05rem を下限にする */
+const bodyCellSx = {
+  fontSize: "1.05rem",
+  py: 1.75,
+};
+
+/**
+ * 場所の表示。
+ * 「立沼」「大沼」は字面が似ているので、サイト共通の識別色チップで出す。
+ * 公民館など、コート以外の場所はそのまま文字で出す。
+ */
+const PlaceCell = ({ place }: { place: string }) => {
+  if (!/立沼|大沼/.test(place)) {
+    return <>{place}</>;
+  }
+  const color = getCourtColor(place);
+  return (
+    <Box
+      component="span"
+      sx={{
+        display: "inline-block",
+        fontFamily: fonts.display,
+        fontWeight: 700,
+        fontSize: "1rem",
+        px: 1.5,
+        py: "4px",
+        borderRadius: shape.chip,
+        backgroundColor: color.pale,
+        color: color.main,
+        border: `1px solid ${color.main}33`,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {place}
+    </Box>
+  );
+};
+
+/** 今日（ローカル時刻）の YYYY-MM-DD */
+const todayIso = () => {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+};
 
 const Schedule = () => {
-  const theme = useTheme();
   const [events, setEvents] = useState<ClubEvent[] | null>(null);
   const [error, setError] = useState("");
   const [year, setYear] = useState("");
@@ -47,85 +107,109 @@ const Schedule = () => {
     () => (events ?? []).filter((e) => e.date.startsWith(year)),
     [events, year]
   );
-
-  if (error) return <Alert severity="error">{error}</Alert>;
-  if (!events) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  const today = todayIso();
 
   return (
     <>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
-        <Typography variant="h6">行事予定表</Typography>
-        {years.length > 1 && (
-          <TextField
-            select
-            size="small"
-            label="年"
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            sx={{ minWidth: 120 }}
-          >
-            {years.map((y) => (
-              <MenuItem key={y} value={y}>
-                {y}年
-              </MenuItem>
-            ))}
-          </TextField>
-        )}
-      </Box>
+      <SectionHead
+        eyebrow="行事予定表"
+        heading="今年の行事"
+        description="大会・親睦会・コート整備などの年間予定です。日程は天候や施設の都合で変わることがあります。"
+      />
 
-      <Table component={Paper}>
-        <TableHead
-          sx={{
-            backgroundColor: theme.palette.primary.main,
-            "& .MuiTableCell-head": {
-              color: "white",
-            },
-          }}
-        >
-          <TableRow>
-            <TableCell>日付</TableCell>
-            <TableCell>曜日</TableCell>
-            <TableCell width={200}>行事</TableCell>
-            <TableCell>場所</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {shown.map((event) => (
-            <TableRow key={event.id}>
-              <TableCell sx={{ whiteSpace: "nowrap" }}>
-                {formatEventDate(event.date)}
-              </TableCell>
-              <TableCell
-                sx={{
-                  color:
-                    event.dow === "日"
-                      ? "#c0392b"
-                      : event.dow === "土"
-                        ? "#1565c0"
-                        : undefined,
-                }}
-              >
-                {event.dow}
-              </TableCell>
-              <TableCell width={200}>{event.title}</TableCell>
-              <TableCell>{event.place}</TableCell>
-            </TableRow>
-          ))}
-          {shown.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={4} sx={{ color: "text.secondary" }}>
-                予定はまだ登録されていません。
-              </TableCell>
-            </TableRow>
+      {error && <Alert severity="error">{error}</Alert>}
+
+      {!events && !error && (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+          <CircularProgress />
+        </Box>
+      )}
+
+      {events && (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+          {years.length > 1 && (
+            <Segmented
+              label="表示する年"
+              value={year}
+              onChange={setYear}
+              options={years.map((y) => ({ label: `${y}年`, value: y }))}
+            />
           )}
-        </TableBody>
-      </Table>
+
+          <Box
+            sx={{
+              border: `1px solid ${tokens.line}`,
+              borderRadius: shape.panel,
+              overflow: "hidden",
+              backgroundColor: tokens.surface,
+            }}
+          >
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={headCellSx}>日付</TableCell>
+                    <TableCell sx={{ ...headCellSx, width: 240 }}>
+                      行事
+                    </TableCell>
+                    <TableCell sx={headCellSx}>場所</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {shown.map((event) => {
+                    // 済んだ予定は沈めて、これからの予定を目で拾いやすくする
+                    const past = event.date < today;
+                    const dayColor = getDayColor(event.dow);
+                    return (
+                      <TableRow
+                        key={event.id}
+                        sx={{ opacity: past ? 0.55 : 1 }}
+                      >
+                        {/* 曜日は日付と1列にまとめる。列が減るぶん文字を大きく取れる */}
+                        <TableCell
+                          sx={{
+                            ...bodyCellSx,
+                            whiteSpace: "nowrap",
+                            fontFamily: fonts.display,
+                            fontWeight: 700,
+                            color: dayColor ?? tokens.ink,
+                          }}
+                        >
+                          {formatEventDate(event.date)}（{event.dow}）
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            ...bodyCellSx,
+                            width: 240,
+                            fontFamily: fonts.display,
+                            fontWeight: 700,
+                          }}
+                        >
+                          {event.title}
+                        </TableCell>
+                        <TableCell sx={bodyCellSx}>
+                          <PlaceCell place={event.place} />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {shown.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={3} sx={bodyCellSx}>
+                        予定はまだ登録されていません。
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+
+          <Typography sx={{ fontSize: "1rem", color: tokens.muted }}>
+            日付が薄くなっている行は、すでに終わった予定です。
+          </Typography>
+        </Box>
+      )}
     </>
   );
 };

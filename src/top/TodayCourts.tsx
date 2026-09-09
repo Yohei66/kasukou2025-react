@@ -68,7 +68,7 @@ const SlotCell = ({ value, cancel, onClick }: SlotCellProps) => {
         cursor: clickable ? "pointer" : "default",
         userSelect: "none",
         ...(cancel
-          ? { backgroundColor: "#FBE9E7" }
+          ? { backgroundColor: tokens.dangerPale }
           : held
             ? { backgroundColor: tokens.greenPale }
             : { opacity: 0.55 }),
@@ -88,7 +88,7 @@ const SlotCell = ({ value, cancel, onClick }: SlotCellProps) => {
             fontSize: ".78rem",
             letterSpacing: ".06em",
             color: "#fff",
-            backgroundColor: "#c0392b",
+            backgroundColor: tokens.danger,
             borderRadius: "4px",
             px: 0.75,
             py: "1px",
