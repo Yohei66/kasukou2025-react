@@ -1,0 +1,46 @@
+# =============================================================
+#  試験用サーバー専用の設定。サイト直下（index.html と同じ階層）に置く。
+#  ★ 本番サーバーには絶対に置かないこと（本番が検索に出なくなります）
+#
+#  方針：誰でも見られる（認証なし）が、検索結果には載せない。
+#        載せない仕事は、下の「X-Robots-Tag: noindex」が単独で担っています。
+# =============================================================
+
+# --- 1. 検索エンジンに載せない -------------------------------
+#  全ページ・全ファイルの応答に noindex を付ける。
+#  Google / Bing はこれを見て、インデックスから外す（すでに載っていても消える）。
+#
+#  この方式が成立する条件は「クローラーがページを取得できること」です。
+#  そのため Basic認証はかけず、robots.txt でも Disallow していません。
+#  （取得できないと noindex を読めず、URL だけが検索結果に残ることがあります）
+#
+#  トップページは HashRouter（/#/court など）で、# 以降はサーバーに送られません。
+#  つまり全ルートが同じ index.html なので、この1行で全ページを覆えます。
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow, noarchive"
+</IfModule>
+
+# --- 2. 設定ファイルを配信しない -----------------------------
+#  config.php をサイト直下に置いている場合の保険。
+#  PHPが何かの拍子に実行されなくなっても、平文で読まれないようにする。
+<FilesMatch "^(config\.php|\.htaccess|\.htpasswd)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# --- 3. Basic認証（今は無効）---------------------------------
+#  関係者以外に完全に見せたくなくなったら、下の4行の # を外す。
+#  ただし有効にすると、クローラーも 401 で弾かれてページを取得できなくなり、
+#  上の noindex は読まれなくなります（認証が壁になるので、それで問題ありません）。
+#
+#  AuthUserFile はサーバー上の絶対パスで書くこと。
+#
+# AuthType Basic
+# AuthName "kasukou test site"
+# AuthUserFile /virtual/testkasukou/public_html/.htpasswd
+# Require valid-user

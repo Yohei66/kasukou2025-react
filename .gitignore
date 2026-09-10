@@ -29,3 +29,10 @@ dist-ssr
 # 本番・試験サーバー用の設定ファイル（パスワードを含む。Gitに入れない）
 api/config.php
 config.php
+
+# Basic認証のパスワードファイル（ハッシュとはいえ総当たりの的になるので入れない）
+.htpasswd
+
+# ビルド済みの配布物。config.php が混入しうるので追跡しない
+api.zip
+dist.zip

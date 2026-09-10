@@ -21,6 +21,7 @@ import Login from "./Login";
 import Contact from "./Contact";
 import Admin from "./Admin";
 import RequireAuth from "./RequireAuth";
+import ScrollToTop from "./ScrollToTop";
 
 /**
  * トップページ以外の下層ページの外枠。
@@ -116,6 +117,8 @@ function App() {
     <ThemeProvider theme={theme}>
       <HashRouter>
         <CssBaseline />
+        {/* ページ移動のたびに紙面の先頭から見せる */}
+        <ScrollToTop />
         <HeaderBar />
         <Box component="main" sx={{ width: "100%" }}>
           {/* 固定 AppBar 分の余白 */}

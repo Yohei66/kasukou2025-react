@@ -43,11 +43,24 @@ VITE v6.x  ready in xxx ms
 ### 4. DBテーブルの初期化（初回のみ）
 `courts` / `cancellations` / `inquiries` / `events` / `documents` / `links` テーブルを作成します。
 
+`migrate.php` は管理者専用です（DBを書き換えるので、URLを知っているだけでは実行できません）。
+先にログインしてセッションのクッキーを取り、それを付けて実行します。
+
 ```bash
-curl http://localhost:9000/migrate.php
+# 1. ログイン（ユーザー名・パスワードは .env の ADMIN_USER / ADMIN_PASSWORD）
+curl -c cookie.txt -X POST http://localhost:9000/login.php \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"kasukou-dev"}'
+
+# 2. テーブル作成
+curl -b cookie.txt http://localhost:9000/migrate.php
 ```
 
 `{"success":true,"message":"マイグレーション完了"}` が返れば成功です。
+`{"success":false,...,"message":"ログインが必要です"}` が返る場合は、1 のパスワードが
+`.env` の値と合っているか確認してください（`.env` が無いときの既定値は `kasukou-dev`）。
+
+ログインの照合は設定値だけで行い DB を見ないので、**テーブルが1つも無い状態でもログインできます**。
 
 `events` / `documents` / `links` は管理画面から編集する内容です。
 `documents` と `links` は、テーブルが空のときだけ初期値（従来ページにベタ書きしていた内容）が入ります。
@@ -119,9 +132,28 @@ $host = config_value('DB_HOST', 'db');   // api/db.php
 | `CANCEL_PASSWORD` | コート中止連絡の合言葉 | ✅ | ✅ |
 | `CONTACT_TO` | 問い合わせの通知先アドレス | ✅ | ✅ |
 | `CONTACT_FROM` | 問い合わせメールの差出人 | ✅ | ✅ |
+| `SMTP_HOST` | SMTP サーバーのホスト名 | — | ✅ |
+| `SMTP_PORT` | SMTP のポート（既定 465） | — | ✅ |
+| `SMTP_USER` | SMTP 認証に使うメールアドレス | — | ✅ |
+| `SMTP_PASSWORD` | そのメールボックスのパスワード | — | ✅ |
 
 `CONTACT_TO` と `CONTACT_FROM` は**両方そろって初めてメールを送ります**。
 どちらかが空のあいだは、問い合わせはDBに保存されるだけです。
+
+### メールの送り方（SMTP 認証を使う理由）
+
+`SMTP_HOST` / `SMTP_USER` / `SMTP_PASSWORD` がそろっていれば SMTP 認証で送り、
+空ならサーバーの sendmail 経由で送ります。**サーバーでは SMTP 認証を使ってください。**
+
+sendmail 経由だと、Exim がエンベロープ送信者をサーバーのアカウント
+（例 `account@s325.xrea.com`）に固定します。信頼されていないユーザーからの
+`-f` 指定は無視されるため、こちらでは変えられません。すると SPF は pass しても
+照合されたドメインが `From` のドメインと一致せず、DMARC のアライメントが失敗して
+Gmail では「◯◯.xrea.com 経由」と表示され、迷惑メールに振り分けられます。
+
+SMTP 認証で送ると、認証したメールボックスがそのまま送信者になります。
+レンタルサーバーの管理画面「メール設定」でメールボックスを作り、
+`SMTP_USER` と `CONTACT_FROM` を**同じアドレス**にすれば `From` と一致します。
 
 ### ローカル開発の設定
 
@@ -152,7 +184,8 @@ config.php          ← ここが安全（public_html と同じ階層＝ブラ�
 上の階層に置けないサーバーでは `public_html/api/config.php` でも動きます。
 
 記入済みのファイルは、このリポジトリでは **`deploy/config.php`** に置く運用です。
-`deploy/` は `.gitignore` 済みで、`api.zip` にも入りません。
+`deploy/config.php` と `deploy/.htpasswd` は `.gitignore` 済みです
+（`deploy/` 全体ではなく、パスワードを含むファイルだけを除外しています）。
 
 > ⚠️ **`api/config.php` に置いたままにしないでください。**
 > 設定ファイルは環境変数より優先されるため、ローカル開発でもサーバー用の値が
@@ -169,6 +202,91 @@ config.php          ← ここが安全（public_html と同じ階層＝ブラ�
 
 削除してから展開する手順の場合は、展開後に `deploy/config.php` を手動で置き直してください。
 
+> ⚠️ **`api.zip` を作るときは `config.php` を除外してください。**
+> `zip` にそのまま固めると混入します。除外して固める例:
+>
+> ```bash
+> zip -r api.zip api -x "api/config.php"
+> ```
+
+### サーバーのDBテーブル初期化（サーバーごとに初回のみ）
+
+`config.php` を置いただけではテーブルはできません。初期化しないと、
+コート予約状況のアップロードで次のエラーになります。
+
+```
+SQLSTATE[42S02]: Base table or view not found: 1146 Table '<DB名>.courts' doesn't exist
+```
+
+`migrate.php` は管理者専用なので、**管理者ページにログインしてから**、
+同じブラウザで次を開きます。
+
+```
+1. https://<サイトのURL>/#/login       ← config.php の ADMIN_USER / ADMIN_PASSWORD でログイン
+2. https://<サイトのURL>/api/migrate.php
+```
+
+`{"success":true,"message":"マイグレーション完了"}` が出れば完了です。
+`{"success":false,...,"message":"ログインが必要です"}` が出る場合は 1 のログインが
+できていません（別のブラウザ・シークレットウィンドウだとセッションが共有されません）。
+
+ログインの照合は `config.php` の値だけで行い DB を見ないので、
+**テーブルが1つも無い状態でもログインできます**。
+
+何度実行しても既存データは消えません（`CREATE TABLE IF NOT EXISTS` と、
+テーブルが空のときだけ入る初期データ）。
+
+### 試験用サーバーを検索に載せない（試験用のみ）
+
+試験用サーバーは**本番と同じ `<title>` と説明文**を出すため、検索エンジンに載ると
+本番と重複したページとして並んでしまいます。
+
+一方で、関係者に URL を送って見てもらうため、**認証はかけません**。
+「誰でも見られるが、検索には出ない」を成立させる方法は1つだけです。
+
+| やること | 理由 |
+| --- | --- |
+| `X-Robots-Tag: noindex` を全応答に付ける（`.htaccess`） | 検索結果から確実に外れる。すでに載っていても消える |
+| `robots.txt` で**クロールを禁止しない** | 禁止すると上の noindex を読み取れず、かえって URL だけが載ることがある |
+
+> ⚠️ **`robots.txt` に `Disallow: /` を書いてはいけません。**
+> 「クロールを止める」と「検索に載せない」は別物です。クロールを止めると
+> 検索エンジンはページを取得できず、`noindex` の指示も読めません。その結果、
+> 外部リンクから URL だけを拾って「説明のない検索結果」として載ることがあります。
+> **巡回は許可し、`noindex` で断る** のが正解です。
+
+`deploy/` のファイルを、**サイト直下**（`index.html` と同じ階層）へアップロードします。
+
+```
+サイト直下/
+├─ index.html
+├─ .htaccess     ← deploy/.htaccess
+├─ robots.txt    ← deploy/robots.txt
+└─ api/
+```
+
+トップは HashRouter（`/#/court` など）で `#` 以降はサーバーに送られないため、
+全ルートが同じ `index.html` です。`.htaccess` の1行で全ページを覆えます。
+
+設定後は次で確認できます。
+
+```bash
+curl -I http://<サイトのURL>/ | grep -i x-robots-tag
+# → X-Robots-Tag: noindex, nofollow, noarchive
+```
+
+> ⚠️ **`.htaccess` と `robots.txt` を本番サーバーに置かないこと。**
+> 本番が検索に出なくなります。
+
+**完全に見せたくなくなったら**、`deploy/.htaccess` 末尾の Basic 認証の4行を有効にし、
+`deploy/.htpasswd` もアップロードします。`AuthUserFile` はサーバー上の絶対パスで
+書く必要があり、調べ方は次の `path.php` をサイト直下に置いて開くのが確実です
+（`@unlink` により1回開くと自分で消えます）。
+
+```php
+<?php echo __DIR__; @unlink(__FILE__);
+```
+
 ### ファイルの一覧
 
 | ファイル | Git | 役割 |
@@ -178,6 +296,10 @@ config.php          ← ここが安全（public_html と同じ階層＝ブラ�
 | `api/config.php.example` | ✅ | サーバー設定の記入例 |
 | `deploy/config.php` | ❌ | サーバー用の記入済みファイル（アップロード元） |
 | `api/config.php` | ❌ | **置かないこと**（サーバー上にのみ存在させる） |
+| `deploy/.htaccess` | ✅ | 試験用サーバーのアクセス制限（パスは要書き換え） |
+| `deploy/.htpasswd` | ❌ | Basic認証のパスワード（試験用サーバーにのみ置く） |
+| `deploy/robots.txt` | ✅ | 試験用サーバーのクロール禁止 |
+| `api.zip` / `dist.zip` | ❌ | 配布用。`config.php` を混入させないこと |
 
 ## Docker を使わない場合
 
@@ -206,6 +328,9 @@ npm run deploy   # GitHub Pages へデプロイ
 | 依存関係を更新したのに反映されない | `docker compose down` 後に再度 `docker compose up -d`（`node_modules` はボリューム管理のため、必要なら `docker compose down -v`） |
 | 行事予定表・ドキュメント・リンクが表示されない<br>（`SQLSTATE[HY000] [2002] No such file or directory`） | `api/config.php` が残っています。設定ファイルは環境変数より優先されるため、サーバー用の値でDBに接続しようとして失敗します。`deploy/` に移動してください（[設定](#設定環境依存の値)参照）。原因の切り分けは `curl http://localhost:9000/events_list.php` が早いです |
 | `.env` を書き換えたのにDBのユーザー名／パスワードが変わらない | MariaDB はデータが残っていると変更を反映しません。`docker compose down -v` で作り直し、`migrate.php` を再実行してください |
+| `Table '<DB名>.courts' doesn't exist`（`42S02`） | テーブルの初期化がまだです。ローカルは[4. DBテーブルの初期化](#4-dbテーブルの初期化初回のみ)、サーバーは[サーバーのDBテーブル初期化](#サーバーのdbテーブル初期化サーバーごとに初回のみ)を実行してください |
+| 正しいパスワードなのに管理者ログインが `401` になる | `config.php` が読まれていません。値が空だと誰も通さない作りです。置き場所は `api/` の**中**か、`api/` の**2つ上**の2か所だけを見ます（`api/` の1つ上＝サイト直下では読まれません）。`migrate.php` を開いて `ログインが必要です` ではなく `401` が続く場合もこれを疑ってください |
+| `migrate.php` が `{"success":false,...,"message":"ログインが必要です"}` を返す | `migrate.php` は管理者専用です。先に管理者ページへログインし、**同じブラウザ**で開いてください（`curl` の場合は `-c` / `-b` でクッキーを引き回す） |
 
 # Notion
 

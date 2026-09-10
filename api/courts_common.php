@@ -81,6 +81,32 @@ function clean_text($value, int $max): string
     return mb_substr($v, 0, $max);
 }
 
+/**
+ * 改行だけは残す clean_text。問い合わせ本文のように複数行で書かれる入力に使う。
+ *
+ * 改行は \n にそろえる。\r を残すとメールヘッダに紛れ込ませられるため必ず落とす。
+ * 空行の連ねすぎも詰めておく。
+ */
+function clean_multiline_text($value, int $max): string
+{
+    $v = is_scalar($value) ? trim((string)$value) : '';
+    $v = str_replace(["\r\n", "\r"], "\n", $v);
+
+    // \x0A（改行）だけ残して他の制御文字を落とす
+    $stripped = preg_replace('/[\x00-\x09\x0B-\x1F\x7F]/', '', $v);
+    if (is_string($stripped)) {
+        $v = $stripped;
+    }
+
+    // 空行が3行以上続いたら2行に詰める
+    $collapsed = preg_replace('/\n{3,}/', "\n\n", $v);
+    if (is_string($collapsed)) {
+        $v = $collapsed;
+    }
+
+    return mb_substr($v, 0, $max);
+}
+
 /** YYYY-MM-DD 形式でなければ今日を返す */
 function valid_date_or_today(?string $raw): string
 {

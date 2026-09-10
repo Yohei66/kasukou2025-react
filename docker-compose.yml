@@ -32,6 +32,11 @@ services:
       # 問い合わせフォームの通知先と差出人。両方そろって初めてメールを送る
       CONTACT_TO: ${CONTACT_TO:-}
       CONTACT_FROM: ${CONTACT_FROM:-}
+      # SMTP 認証の設定。3つそろえば SMTP、空なら sendmail 経由（開発では通常空）
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
     working_dir: /var/www/api
     volumes:
       - ./api:/var/www/api

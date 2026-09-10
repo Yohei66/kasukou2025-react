@@ -5,7 +5,9 @@
  *   POST /api/contact.php
  *     { name, email, experience, preferred_days[], message, website }
  *
- * 送信内容はまず DB に保存し、そのうえでメール通知する。
+ * 送信内容はまず DB に保存し、そのうえでメールを2通送る。
+ *   1通目: クラブへの通知（宛先 CONTACT_TO）
+ *   2通目: 問い合わせた方への受付確認（控え）
  * メールが飛ばなくても問い合わせは残るので、取りこぼしが起きない。
  *
  * 宛先は環境変数 CONTACT_TO、差出人は CONTACT_FROM で設定する。
@@ -15,6 +17,7 @@ header('Cache-Control: no-store');
 require_once 'config_load.php';
 require_once 'db.php';
 require_once 'courts_common.php';
+require_once 'mailer.php';
 
 /** 1時間に同じ IP から受け付ける上限 */
 const RATE_LIMIT_PER_HOUR = 5;
@@ -37,6 +40,20 @@ const EXPERIENCES = [
 /** 参加希望日は第3希望まで */
 const MAX_PREFERRED_DATES = 3;
 
+/** メールの差出人名 */
+const CLUB_NAME = '春日部硬式テニスクラブ';
+
+/**
+ * クラブ名を差出人名にしてメールを送る。実際の送信は mailer.php が行う。
+ *
+ * 差出人は2通とも設定ファイルの CONTACT_FROM で固定し、返信先だけ変える。
+ * 送信者を問い合わせ者のアドレスにすると SPF で弾かれるため。
+ */
+function send_club_mail(string $to, string $subject, string $body, string $from, string $replyTo, array $extraHeaders = []): bool
+{
+    return send_utf8_mail($to, $subject, $body, $from, CLUB_NAME, $replyTo, $extraHeaders);
+}
+
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
     send_json(['ok' => false, 'error' => 'method_not_allowed'], 405);
 }
@@ -54,7 +71,8 @@ if (clean_text($input['website'] ?? '', 100) !== '') {
 
 $name = clean_text($input['name'] ?? '', 60);
 $email = clean_text($input['email'] ?? '', 120);
-$message = clean_text($input['message'] ?? '', 2000);
+// 本文は改行を残す（メールに載るときに1行に潰れないように）
+$message = clean_multiline_text($input['message'] ?? '', 2000);
 
 $errors = [];
 if ($name === '') {
@@ -141,43 +159,40 @@ try {
 $to = config_value('CONTACT_TO');
 $from = config_value('CONTACT_FROM');
 $sent = false;
+$replySent = false;
 
 if ($to !== '' && $from !== '') {
-    $subject = '【HP】' . $topic . '（' . $name . ' 様）';
-
-    $lines = [
-        'ホームページのフォームから問い合わせがありました。',
-        '',
-        '受付日時: ' . now_jst(),
-        '用件　　: ' . $topic,
-        'お名前　: ' . $name,
-        'メール　: ' . $email,
+    // 受付内容。クラブへの通知と、問い合わせた方への控えの両方で使う。
+    // 項目名は［］で囲む。受信側が等幅でない書体でも、どこが値か分かるように。
+    $items = [
+        '［用件］' . $topic,
+        '［お名前］' . $name . ' 様',
+        '［メールアドレス］' . $email,
+        '［受付日時］' . now_jst(),
     ];
     if ($isVisit) {
-        $lines[] = 'テニス歴: ' . $experience;
-        $lines[] = '希望日　: ' . ($preferredDates !== '' ? $preferredDates : '未記入');
+        $items[] = '［テニス歴］' . $experience;
+        $items[] = '［参加希望日］' . ($preferredDates !== '' ? $preferredDates : '未記入');
     }
-    $lines = array_merge($lines, [
+    $items = array_merge($items, [
         '',
-        '--- お問い合わせ内容 ---',
+        '［お問い合わせ内容］',
         $message,
+    ]);
+
+    // ---- 1通目: クラブへの通知。返信先は問い合わせた方にする ----
+    $body = implode("\n", array_merge([
+        'ホームページのフォームから問い合わせがありました。',
         '',
-        '（受付番号: ' . $id . '）',
-    ]);
-    $body = implode("\n", $lines);
+    ], $items, [
+        '',
+        '------------------------------',
+        'このメールはホームページのフォームから自動送信されています。',
+        'そのまま返信すると、お問い合わせいただいた方（' . $email . '）に直接届きます。',
+        '受付番号: ' . $id,
+    ]));
 
-    // 差出人はクラブ側のアドレスにし、返信先だけ問い合わせ者にする。
-    // 送信者を相手のアドレスにすると SPF で弾かれて届かなくなるため。
-    $headers = implode("\r\n", [
-        'From: ' . mb_encode_mimeheader('春日部硬式テニスクラブ') . ' <' . $from . '>',
-        'Reply-To: ' . $email,
-        'Content-Type: text/plain; charset=UTF-8',
-        'X-Mailer: PHP/' . phpversion(),
-    ]);
-
-    mb_language('Japanese');
-    mb_internal_encoding('UTF-8');
-    $sent = @mb_send_mail($to, $subject, $body, $headers);
+    $sent = send_club_mail($to, '【HP】' . $topic . '（' . $name . ' 様）', $body, $from, $email);
 
     if ($sent) {
         try {
@@ -186,7 +201,39 @@ if ($to !== '' && $from !== '') {
             // 通知は済んでいるので、フラグ更新の失敗は無視してよい
         }
     }
+
+    // ---- 2通目: 問い合わせた方への受付確認。返信先はクラブにする ----
+    // 送信できたか不安にならないよう、控えを返す。
+    // クラブのアドレスは本文に書かない（Reply-To で返信は届く）。
+    $replyBody = implode("\n", array_merge([
+        $name . ' 様',
+        '',
+        'このたびは' . CLUB_NAME . 'へお問い合わせいただき、ありがとうございます。',
+        '下記の内容で受け付けました。担当者から数日以内にご返信いたします。',
+        '',
+    ], $items, [
+        '',
+        '------------------------------',
+        'このメールは送信内容の控えとして自動でお送りしています。',
+        '内容の訂正や追加のご質問は、このメールにそのまま返信してください。',
+        'しばらく経っても担当者から連絡が届かない場合は、お手数ですが',
+        'ホームページのフォームから再度お送りください。',
+        '',
+        CLUB_NAME,
+        '受付番号: ' . $id,
+    ]));
+
+    // Auto-Submitted は自動返信であることの標準的な表明（RFC 3834）。
+    // 相手が不在通知を設定していても、返信の往復にならない。
+    $replySent = send_club_mail(
+        $email,
+        '【' . CLUB_NAME . '】お問い合わせを受け付けました',
+        $replyBody,
+        $from,
+        $to,
+        ['Auto-Submitted: auto-replied']
+    );
 }
 
 // メールが飛ばなくても内容は保存済みなので、利用者には成功として返す
-send_json(['ok' => true, 'mail_sent' => $sent]);
+send_json(['ok' => true, 'mail_sent' => $sent, 'reply_sent' => $replySent]);

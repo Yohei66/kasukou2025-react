@@ -1,4 +1,21 @@
 <?php
+/**
+ * DBテーブルの作成と初期データの投入（管理者のみ）。
+ *
+ * CREATE TABLE IF NOT EXISTS と seed_if_empty なので、何度実行しても
+ * 既存のデータは消えない。サーバーへ初めて配置したときに1度開けばよい。
+ *
+ * 管理者ログインを必須にしている。DB を書き換えるエンドポイントを
+ * URL を知っているだけで叩ける状態にしないため。
+ * ログインの照合は config.php の値だけで行うので、テーブルが1つも無い
+ * 状態でもログインしてからこのファイルを開ける。
+ */
+header('Content-Type: application/json; charset=utf-8');
+require_once 'admin_guard.php';
+
+// DB に触れる前に認証する（未ログインのリクエストで接続を試みない）
+admin_require_login();
+
 require_once 'db.php';
 
 $pdo->exec("
@@ -147,4 +164,4 @@ seed_if_empty(
     ]
 );
 
-echo json_encode(['success' => true, 'message' => 'マイグレーション完了']);
+echo json_encode(['success' => true, 'message' => 'マイグレーション完了'], JSON_UNESCAPED_UNICODE);
