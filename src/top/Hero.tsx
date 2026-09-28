@@ -4,32 +4,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { Link } from "react-router-dom";
 import CourtLines from "./CourtLines";
 import { fonts, layout, tokens } from "./tokens";
-import { hero, weekSchedule } from "../dataset/topContent";
-import type { ActivityKind } from "../dataset/topContent";
-
-const kindLabel: Record<ActivityKind, string> = {
-  doubles: "ダブルス",
-  lesson: "レッスン",
-};
-
-const kindColor: Record<ActivityKind, string> = {
-  doubles: tokens.ball,
-  lesson: tokens.lessonDot,
-};
-
-const Dot = ({ kind }: { kind: ActivityKind }) => (
-  <Box
-    component="i"
-    sx={{
-      width: 8,
-      height: 8,
-      borderRadius: "2px",
-      flex: "none",
-      display: "inline-block",
-      backgroundColor: kindColor[kind],
-    }}
-  />
-);
+import { hero } from "../dataset/topContent";
 
 const Hero = () => (
   <Box
@@ -52,6 +27,10 @@ const Hero = () => (
             width: "100%",
             height: "100%",
             objectFit: "cover",
+            // スマホでは横幅の4割ほどしか映らない。中央を切り出すと空いたコートに
+            // なってしまうので、人が大きく写っている右端に寄せる。
+            // 横長に収まるデスクトップは中央のままでよい。
+            objectPosition: { xs: "100% 50%", md: "center" },
           }}
         />
         {/* 写真の上でも見出しが読めるように、左を濃くした深緑のスクリム */}
@@ -59,8 +38,13 @@ const Hero = () => (
           sx={{
             position: "absolute",
             inset: 0,
-            background:
-              "linear-gradient(100deg,rgba(6,48,31,.94) 0%,rgba(6,48,31,.82) 38%,rgba(8,60,40,.45) 100%)",
+            background: {
+              // 幅の狭いスマホでは、横グラデーションの「濃い側」だけで画面が
+              // 埋まってしまい写真が沈む。縦方向に切り替えて、見出しの下から
+              // 徐々に写真を出す。
+              xs: "linear-gradient(180deg,rgba(6,48,31,.92) 0%,rgba(6,48,31,.84) 46%,rgba(8,60,40,.60) 100%)",
+              md: "linear-gradient(100deg,rgba(6,48,31,.94) 0%,rgba(6,48,31,.82) 38%,rgba(8,60,40,.45) 100%)",
+            },
           }}
         />
       </>
@@ -77,7 +61,10 @@ const Hero = () => (
       />
     )}
 
-    <Box sx={{ position: "relative", pt: { xs: 7, md: 9.5 } }}>
+    {/* 帯を WeekStrip に出したので、下の余白はヒーロー自身が持つ */}
+    <Box
+      sx={{ position: "relative", pt: { xs: 7, md: 9.5 }, pb: { xs: 7, md: 9.5 } }}
+    >
       <Container
         sx={{
           maxWidth: `${layout.maxWidth}px !important`,
@@ -201,201 +188,6 @@ const Hero = () => (
           </Button>
         </Box>
       </Container>
-
-      {/* ふだんの一週間 */}
-      <Box
-        sx={{
-          position: "relative",
-          mt: 7.25,
-          borderTop: "1px solid rgba(191,232,210,.28)",
-          // 写真の上では濃いめに敷いて時刻の可読性を保つ
-          backgroundColor: hero.photo ? "rgba(3,26,17,.78)" : "rgba(3,26,17,.42)",
-        }}
-      >
-        <Container sx={{ maxWidth: `${layout.maxWidth}px !important`, px: 3 }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "baseline",
-              flexWrap: "wrap",
-              gap: "8px 16px",
-              pt: 2.25,
-              pb: 1.75,
-            }}
-          >
-            <Typography
-              component="span"
-              sx={{ fontFamily: fonts.display, fontWeight: 700, color: "#fff" }}
-            >
-              ふだんの一週間
-            </Typography>
-            <Typography
-              component="span"
-              sx={{ fontSize: ".85rem", color: tokens.onCourtLabel }}
-            >
-              ダブルスゲームが週6日。レッスンはそのうち4日開催しています
-            </Typography>
-            <Box
-              sx={{
-                display: "flex",
-                gap: 2,
-                ml: { xs: 0, md: "auto" },
-                fontFamily: fonts.data,
-                fontSize: ".8rem",
-                letterSpacing: ".06em",
-                color: tokens.onCourtLabel,
-              }}
-            >
-              {(["doubles", "lesson"] as ActivityKind[]).map((kind) => (
-                <Box
-                  key={kind}
-                  sx={{ display: "inline-flex", alignItems: "center", gap: 0.75 }}
-                >
-                  <Dot kind={kind} />
-                  {kindLabel[kind]}
-                </Box>
-              ))}
-            </Box>
-          </Box>
-
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "repeat(7,1fr)" },
-              gap: { xs: 0.75, md: 1 },
-              pb: 2.25,
-            }}
-          >
-            {weekSchedule.map((d) => (
-              <Box
-                key={d.day}
-                sx={{
-                  borderRadius: "10px",
-                  border: d.rest
-                    ? "1px dashed rgba(191,232,210,.14)"
-                    : "1px solid rgba(191,232,210,.18)",
-                  backgroundColor: d.rest ? "transparent" : "rgba(255,255,255,.07)",
-                  px: { xs: 1.75, md: 1.375 },
-                  py: { xs: 1.375, md: 1.5 },
-                  display: "flex",
-                  flexDirection: { xs: "row", md: "column" },
-                  alignItems: { xs: "center", md: "stretch" },
-                  gap: { xs: 1.75, md: 1.25 },
-                }}
-              >
-                <Typography
-                  component="span"
-                  sx={{
-                    fontFamily: fonts.display,
-                    fontWeight: 700,
-                    fontSize: "1.02rem",
-                    color: d.rest ? "#5E7C6C" : "#fff",
-                    textAlign: { xs: "left", md: "center" },
-                    width: { xs: "1.5em", md: "auto" },
-                    flex: "none",
-                  }}
-                >
-                  {d.day}
-                </Typography>
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: { xs: "row", md: "column" },
-                    flexWrap: "wrap",
-                    alignItems: { xs: "baseline", md: "stretch" },
-                    gap: { xs: "4px 18px", md: 1.125 },
-                    flex: { xs: 1, md: "none" },
-                  }}
-                >
-                  {d.rest ? (
-                    <Typography
-                      component="span"
-                      sx={{
-                        fontFamily: fonts.data,
-                        fontSize: ".8rem",
-                        letterSpacing: ".06em",
-                        color: "#5E7C6C",
-                        textAlign: { xs: "left", md: "center" },
-                        width: "100%",
-                      }}
-                    >
-                      休み
-                    </Typography>
-                  ) : (
-                    d.activities.map((a) => (
-                      <Box
-                        key={a.kind}
-                        sx={{
-                          display: "flex",
-                          flexDirection: { xs: "row", md: "column" },
-                          alignItems: { xs: "baseline", md: "stretch" },
-                          gap: { xs: 1, md: 0.25 },
-                        }}
-                      >
-                        <Box
-                          component="span"
-                          sx={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 0.625,
-                            fontFamily: fonts.data,
-                            fontWeight: 600,
-                            fontSize: ".8rem",
-                            letterSpacing: ".04em",
-                            color: "#DCEBE2",
-                          }}
-                        >
-                          <Dot kind={a.kind} />
-                          {kindLabel[a.kind]}
-                        </Box>
-                        <Box
-                          component="span"
-                          sx={{
-                            fontFamily: fonts.data,
-                            fontSize: ".76rem",
-                            color: tokens.onCourtDim,
-                            fontVariantNumeric: "tabular-nums",
-                            pl: { xs: 0, md: "13px" },
-                          }}
-                        >
-                          {a.time}
-                        </Box>
-                      </Box>
-                    ))
-                  )}
-                </Box>
-              </Box>
-            ))}
-          </Box>
-
-          <Box
-            component={Link}
-            to="/activity"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 0.875,
-              mb: 3.25,
-              fontFamily: fonts.data,
-              fontSize: ".85rem",
-              letterSpacing: ".06em",
-              color: tokens.onCourtLabel,
-              textDecoration: "none",
-              borderBottom: "1px solid rgba(157,195,175,.35)",
-              pb: "3px",
-              transition: "color .18s ease, border-color .18s ease",
-              "&:hover": {
-                color: tokens.ball,
-                borderBottomColor: tokens.ball,
-              },
-            }}
-          >
-            コート別の活動時間を見る
-            <ArrowForwardIcon sx={{ fontSize: 15 }} />
-          </Box>
-        </Container>
-      </Box>
     </Box>
   </Box>
 );

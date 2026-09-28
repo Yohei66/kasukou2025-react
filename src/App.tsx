@@ -11,7 +11,13 @@ import type { ReactNode } from "react";
 import { fonts, layout, tokens } from "./top/tokens";
 import { HeaderBar } from "./HeaderBar";
 import Top from "./Top";
-import { HashRouter, Route, Routes } from "react-router-dom";
+import {
+  HashRouter,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import Activity from "./Activity";
 import Links from "./Links";
 import Documents from "./Documents";
@@ -28,15 +34,27 @@ import ScrollToTop from "./ScrollToTop";
  * トップの Section と同じ「paper 地・最大 1120px・左右 24px・上下 sectionPy」に
  * 揃えることで、ページを移動しても紙面の幅と余白が変わらないようにしている。
  */
-const PageContainer = ({ children }: { children: ReactNode }) => (
-  <Box sx={{ py: layout.sectionPy, backgroundColor: tokens.paper }}>
+const PageContainer = ({
+  children,
+  compact = false,
+}: {
+  children: ReactNode;
+  compact?: boolean;
+}) => (
+  <Box
+    sx={{
+      py: compact ? { xs: 2, md: 3 } : layout.sectionPy,
+      backgroundColor: tokens.paper,
+    }}
+  >
     <Container
       sx={{
         maxWidth: `${layout.maxWidth}px !important`,
-        px: 3,
+        // 管理画面は各パネルが自前で余白を持つので、外枠は詰めて上を空けすぎないようにする
+        px: compact ? 0 : 3,
         display: "flex",
         flexDirection: "column",
-        gap: 5,
+        gap: compact ? 0 : 5,
       }}
     >
       {children}
@@ -112,75 +130,102 @@ const theme = createTheme({
   },
 });
 
+/**
+ * ヘッダーはサイト全体で1つだけ置く。
+ * 管理画面かどうかで「管理者」リンクとログアウトを出し分けたいので、
+ * ルーターの内側（= useLocation が使える場所）にこの層を挟んでいる。
+ */
+function AppLayout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isAdmin = location.pathname === "/admin";
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/logout.php", { method: "POST" });
+    } catch {
+      /* 通信に失敗してもログイン画面へ戻す */
+    }
+    localStorage.removeItem("authenticated");
+    navigate("/login");
+  };
+
+  return (
+    <>
+      {/* ページ移動のたびに紙面の先頭から見せる */}
+      <ScrollToTop />
+      <HeaderBar isAdmin={isAdmin} onLogout={handleLogout} />
+      <Box component="main" sx={{ width: "100%" }}>
+        {/* 固定 AppBar 分の余白 */}
+        <Toolbar />
+        <Routes>
+          {/* トップ・活動内容・問い合わせは全幅レイアウトのため Container を挟まない */}
+          <Route path="/" element={<Top />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/activity" element={<Activity />} />
+          <Route
+            path="/documents"
+            element={
+              <PageContainer>
+                <Documents />
+              </PageContainer>
+            }
+          />
+          <Route
+            path="/links"
+            element={
+              <PageContainer>
+                <Links />
+              </PageContainer>
+            }
+          />
+          <Route
+            path="/court"
+            element={
+              <PageContainer>
+                <Court />
+              </PageContainer>
+            }
+          />
+          <Route
+            path="/schedule"
+            element={
+              <PageContainer>
+                <Schedule />
+              </PageContainer>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <RequireAuth>
+                <PageContainer compact>
+                  <Admin />
+                </PageContainer>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <PageContainer>
+                <Login />
+              </PageContainer>
+            }
+          />
+          {/* ここに他のルートを追加 */}
+        </Routes>
+      </Box>
+    </>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <HashRouter>
         <CssBaseline />
-        {/* ページ移動のたびに紙面の先頭から見せる */}
-        <ScrollToTop />
-        <HeaderBar />
-        <Box component="main" sx={{ width: "100%" }}>
-          {/* 固定 AppBar 分の余白 */}
-          <Toolbar />
-          <Routes>
-            {/* トップ・活動内容・問い合わせは全幅レイアウトのため Container を挟まない */}
-            <Route path="/" element={<Top />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/activity" element={<Activity />} />
-            <Route
-              path="/documents"
-              element={
-                <PageContainer>
-                  <Documents />
-                </PageContainer>
-              }
-            />
-            <Route
-              path="/links"
-              element={
-                <PageContainer>
-                  <Links />
-                </PageContainer>
-              }
-            />
-            <Route
-              path="/court"
-              element={
-                <PageContainer>
-                  <Court />
-                </PageContainer>
-              }
-            />
-            <Route
-              path="/schedule"
-              element={
-                <PageContainer>
-                  <Schedule />
-                </PageContainer>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <RequireAuth>
-                  <PageContainer>
-                    <Admin />
-                  </PageContainer>
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/login"
-              element={
-                <PageContainer>
-                  <Login />
-                </PageContainer>
-              }
-            />
-            {/* ここに他のルートを追加 */}
-          </Routes>
-        </Box>
+        <AppLayout />
       </HashRouter>
     </ThemeProvider>
   );

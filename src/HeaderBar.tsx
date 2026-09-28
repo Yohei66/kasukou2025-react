@@ -174,18 +174,38 @@ export const HeaderBar = (props: Props) => {
           見学・体験を申し込む
         </Button>
         <Box sx={{ textAlign: "center", mt: 1.5 }}>
-          <Box
-            component={Link}
-            to={adminNav.path}
-            sx={{
-              fontFamily: fonts.data,
-              fontSize: ".8rem",
-              color: tokens.muted,
-              textDecoration: "none",
-            }}
-          >
-            {adminNav.label}
-          </Box>
+          {/* 管理画面ではログアウト。デスクトップのヘッダーと出し分けを揃える */}
+          {isAdmin ? (
+            <Box
+              component="button"
+              type="button"
+              onClick={onLogout}
+              sx={{
+                fontFamily: fonts.data,
+                fontSize: ".8rem",
+                color: tokens.muted,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                p: 0,
+              }}
+            >
+              ログアウト
+            </Box>
+          ) : (
+            <Box
+              component={Link}
+              to={adminNav.path}
+              sx={{
+                fontFamily: fonts.data,
+                fontSize: ".8rem",
+                color: tokens.muted,
+                textDecoration: "none",
+              }}
+            >
+              {adminNav.label}
+            </Box>
+          )}
         </Box>
       </Box>
     </Box>

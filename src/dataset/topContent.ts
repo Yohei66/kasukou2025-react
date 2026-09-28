@@ -15,7 +15,8 @@ export const hero: {
 } = {
   eyebrow: "埼玉県春日部市・硬式テニス",
   headingLines: ["春日部で", "テニスするなら"],
-  lead: "春日部市の市民テニスクラブです。月曜をのぞく週6日、立沼・大沼コートで活動しています。ジュニアから70代まで約100人が所属し、レッスン料は無料。会費は月1,000円です。",
+  // スクールと誤解されないよう、レッスンやジュニアには触れず「会員どうしのダブルス」を軸に書く
+  lead: "春日部市の市民テニスクラブです。会員どうしのダブルスゲームを中心に、月曜をのぞく週6日、立沼・大沼コートで活動しています。幅広い年代の約100人が所属し、会費は月1,000円です。",
   // 【画像を使うとき その2】先頭で読み込んだ heroPhoto をここに渡す。
   // この行を消すと、コートの線画の背景に戻ります。
   // 撮影仕様: 横位置 16:9 以上 / 幅2000px以上 / 画面左半分に人物を置かない（見出しが乗るため）
@@ -23,20 +24,32 @@ export const hero: {
 };
 
 // ---- ふだんの一週間 ----
-export type ActivityKind = "doubles" | "lesson";
-
-export type DayActivity = {
-  kind: ActivityKind;
-  time: string;
-};
-
+// 訪問者の目に最初に入る帯なので、ダブルス／レッスンの区別は出さず
+// 「その曜日は何時から何時まで活動しているか」だけを持つ
 export type DaySchedule = {
   day: string;
   rest?: boolean;
-  activities: DayActivity[];
+  /** その曜日の活動時間（全コート・全活動を通した最も早い開始–最も遅い終了） */
+  time?: string;
 };
 
 // 実体は lessons / doubles から組み立てる（このファイル下部を参照）
+
+// ---- ダブルスゲーム（トップページの中心となるセクション） ----
+export const doublesHighlights: { title: string; body: string }[] = [
+  {
+    title: "集まった人で組む",
+    body: "その日コートに来た会員どうしでペアを組み、ゲームをします。相手を自分で探す必要はありません。",
+  },
+  {
+    title: "毎回ちがう顔ぶれ",
+    body: "ペアや対戦相手は入れ替わっていくので、いろいろな人とゲームができます。",
+  },
+  {
+    title: "親睦がいちばん",
+    body: "勝ち負けより、みんなで楽しむことが目的です。仕事をしている方から退職された方まで、一緒にプレーしています。",
+  },
+];
 
 // ---- はじめての方へ ----
 export type PointIcon = "tennis" | "payment" | "calendar";
@@ -44,13 +57,13 @@ export type PointIcon = "tennis" | "payment" | "calendar";
 export const points: { icon: PointIcon; title: string; body: string }[] = [
   {
     icon: "tennis",
-    title: "初心者から始められます",
-    body: "会員の中の適任者がコーチを務め、基本から丁寧に指導します。レッスン料は無料。ラケットの握り方から始めた会員も大勢います。",
+    title: "ブランクがあっても大丈夫",
+    body: "学生時代以来、何十年ぶりという会員もたくさんいます。ゲームを重ねるうちに、自然と勘が戻ってきます。",
   },
   {
     icon: "payment",
     title: "会費は月1,000円だけ",
-    body: "6か月ごとにまとめてお支払いいただきます。レッスン料やコート代の追加負担はありません。市民クラブならではの続けやすさが魅力です。",
+    body: "6か月ごとにまとめてお支払いいただきます。コート代などの追加負担はありません。市民クラブならではの続けやすさです。",
   },
   {
     icon: "calendar",
@@ -64,21 +77,22 @@ export const points: { icon: PointIcon; title: string; body: string }[] = [
 export const stats: { value: string; unit?: string; label: string }[] = [
   { value: "100", unit: "名", label: "在籍会員数" },
   { value: "10–70", unit: "代", label: "会員の年齢層" },
-  { value: "7", unit: "クラス", label: "レベル別レッスン" },
   { value: "6", unit: "日 / 週", label: "活動日数（月曜以外）" },
+  { value: "2", unit: "か所", label: "活動コート（立沼・大沼）" },
 ];
 
 // ---- こんな方に ----
 export const checklist = [
   "学生のとき以来、久しぶりにテニスを再開したい",
-  "一緒に打つ相手がいなくて、練習の機会がない",
-  "スクールに通うほどではないが、きちんと教わりたい",
+  "一緒に打つ相手がいなくて、ゲームをする機会がない",
+  "ダブルスの試合を、気軽にたくさんしたい",
+  "年齢や職業をこえて、テニス仲間をつくりたい",
   "平日の午前中に、体を動かす習慣をつくりたい",
-  "子ども（小学2年生以上）にテニスを習わせたい",
 ];
 
 // ---- レッスン ----
-// トップページ（要約）と活動内容ページ（詳細）の両方がこの配列を参照する。
+// トップページ（ふだんの一週間）と活動内容ページ（詳細）の両方がこの配列を参照する。
+// トップではスクールと誤解されないよう、レッスン単独のセクションは置いていない。
 // クラスの増減はここだけ直せば両方に反映される。
 export type LessonGroupKey = "sunday" | "weekday" | "junior";
 
@@ -273,7 +287,7 @@ export const weeklySchedule: { day: Weekday; columns: DayColumn[] }[] =
 export const holidaySchedule = { day: "祝日" as const, columns: columnsFor("祝") };
 
 // ---- ふだんの一週間（トップページのヒーロー下） ----
-// 曜日ごとに「ダブルスは何時から何時まで」「レッスンは何時から何時まで」を
+// 曜日ごとに「何時から何時まで活動しているか」を
 // lessons / doubles の実データから割り出す。手書きしないので食い違いが起きない。
 const toMinutes = (hhmm: string) => {
   const [h, m] = hhmm.split(":").map(Number);
@@ -294,13 +308,11 @@ const spanOf = (times: string[]): string | null => {
 };
 
 export const weekSchedule: DaySchedule[] = WEEKDAYS.map((day) => {
-  const activities: DayActivity[] = [];
-  const doublesSpan = spanOf(doubles.filter((d) => d.day === day).map((d) => d.time));
-  const lessonSpan = spanOf(lessons.filter((l) => l.day === day).map((l) => l.time));
-  // ダブルスを先に置き、週の土台であることが見た目に出るようにする
-  if (doublesSpan) activities.push({ kind: "doubles", time: doublesSpan });
-  if (lessonSpan) activities.push({ kind: "lesson", time: lessonSpan });
-  return activities.length > 0 ? { day, activities } : { day, rest: true, activities: [] };
+  const time = spanOf([
+    ...doubles.filter((d) => d.day === day).map((d) => d.time),
+    ...lessons.filter((l) => l.day === day).map((l) => l.time),
+  ]);
+  return time ? { day, time } : { day, rest: true };
 });
 
 export const doublesIntro =
@@ -337,9 +349,9 @@ export type PhotoSlotData = {
 };
 
 export const photoSlots: PhotoSlotData[] = [
-  { name: "写真② レッスン風景", spec: "横位置 16:10 ／ コーチと受講者", ratio: "16 / 10" },
-  { name: "写真③ ダブルスのゲーム", spec: "横位置 16:10 ／ 4人が入る画角", ratio: "16 / 10" },
-  { name: "写真④ コート脇での休憩", spec: "横位置 16:10 ／ 雰囲気重視", ratio: "16 / 10" },
+  { name: "写真② ダブルスのゲーム", spec: "横位置 16:10 ／ 4人が入る画角", ratio: "16 / 10" },
+  { name: "写真③ コート脇での休憩", spec: "横位置 16:10 ／ 雰囲気重視", ratio: "16 / 10" },
+  { name: "写真④ 会員どうしで教え合う様子", spec: "横位置 16:10 ／ スクール風に見えない自然な場面", ratio: "16 / 10" },
 ];
 
 export const foryouPhoto: PhotoSlotData = {
@@ -387,7 +399,7 @@ export type Court = {
 export const courts: Court[] = [
   {
     name: "立沼コート",
-    activities: "日曜レッスン、ジュニア、平日レッスン（火・水）、ダブルス",
+    activities: "ダブルス（日・火・水・土・祝）、レッスン（日・火・水）",
     hours: "9:00–17:00",
     // 立沼テニス場（座標指定。「地図を埋め込む」で取り直すと店名ピンつきになります）
     mapUrl:
@@ -395,7 +407,7 @@ export const courts: Court[] = [
   },
   {
     name: "大沼コート",
-    activities: "日曜中級レッスン、実戦クラス（金）、ダブルス（木・金・土日）",
+    activities: "ダブルス（日・木・金・土・祝）、レッスン（日・金）",
     hours: "9:00–17:00",
     // 大沼テニスコート（「地図を埋め込む」から取得）
     mapUrl:

@@ -3,6 +3,8 @@
 
 export const tokens = {
   court: "#06301F", // コートの深緑（ヒーロー／お問い合わせの背景）
+  /** ヒーロー直下の「ふだんの一週間」の帯。court をさらに沈めて地続きに見せる */
+  courtDeep: "#052116",
   courtGradient: "linear-gradient(155deg,#06301F 0%,#0A4A31 55%,#083C28 100%)",
   green: "#0E995A", // クラブのブランドカラー
   greenDeep: "#0B7745",
@@ -19,7 +21,6 @@ export const tokens = {
   onCourtLabel: "#9DC3AF",
   onCourtStrong: "#EAF2EC",
   courtLine: "#BFE8D2", // コートのライン
-  lessonDot: "#7FD6A8",
 
   /**
    * 注意を引く赤。サイト内の赤はこの1色だけに絞る。

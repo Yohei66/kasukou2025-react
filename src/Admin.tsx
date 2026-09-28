@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { HeaderBar } from "./HeaderBar";
-import { useNavigate } from "react-router-dom";
 import CourtEditor from "./admin/CourtEditor";
 import ScheduleEditor from "./admin/ScheduleEditor";
 import DocumentEditor from "./admin/DocumentEditor";
@@ -70,7 +68,6 @@ const readJsonInfo = (text: string): JsonInfo => {
 };
 
 const Admin = () => {
-  const navigate = useNavigate();
   const [tab, setTab] = useState<TabKey>("court");
 
   // --- JSONアップロード ---
@@ -79,16 +76,6 @@ const Admin = () => {
   const [fileInfo, setFileInfo] = useState<JsonInfo | null>(null);
   const [fileError, setFileError] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
-
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/logout.php", { method: "POST" });
-    } catch {
-      /* 通信に失敗してもログイン画面へ戻す */
-    }
-    localStorage.removeItem("authenticated");
-    navigate("/login");
-  };
 
   const handleFileChange = async (selected: File | null) => {
     setFile(null);
@@ -149,8 +136,6 @@ const Admin = () => {
 
   return (
     <>
-      <HeaderBar isAdmin onLogout={handleLogout} />
-
       <div style={tabBar}>
         {TABS.map((t) => (
           <button
