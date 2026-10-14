@@ -9,7 +9,9 @@ const Login = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const handleSubmit = async () => {
+  /** form の submit 経由で呼ぶ（入力欄で Enter を押してもログインできるように） */
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError(null);
     try {
       const res = await axios.post("/api/login.php", { username, password });
@@ -25,7 +27,11 @@ const Login = () => {
     }
   };
   return (
-    <Box sx={{ width: 300, mx: "auto", mt: 8 }}>
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{ width: 300, mx: "auto", mt: 8 }}
+    >
       {error && <Alert severity="error">{error}</Alert>}
       <TextField
         fullWidth
@@ -33,6 +39,8 @@ const Login = () => {
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         margin="normal"
+        autoComplete="username"
+        autoFocus
       />
       <TextField
         fullWidth
@@ -41,13 +49,9 @@ const Login = () => {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         margin="normal"
+        autoComplete="current-password"
       />
-      <Button
-        fullWidth
-        variant="contained"
-        sx={{ mt: 2 }}
-        onClick={handleSubmit}
-      >
+      <Button fullWidth type="submit" variant="contained" sx={{ mt: 2 }}>
         ログイン
       </Button>
     </Box>

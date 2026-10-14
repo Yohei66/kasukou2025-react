@@ -5,10 +5,11 @@ services:
     image: mariadb:10.5
     container_name: dev-db
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: devdb
-      MYSQL_USER: devuser
-      MYSQL_PASSWORD: devpass
+      # 値は .env で管理する（.env が無ければ右側の既定値が使われる）
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${DB_NAME:-devdb}
+      MYSQL_USER: ${DB_USER:-devuser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-devpass}
     ports:
       - "3309:3306"
     volumes:
@@ -17,6 +18,25 @@ services:
   php:
     build: ./api
     container_name: dev-php
+    environment:
+      # 接続先は db サービス。db 側と同じ .env の値を渡して食い違わないようにする
+      DB_HOST: ${DB_HOST:-db}
+      DB_NAME: ${DB_NAME:-devdb}
+      DB_USER: ${DB_USER:-devuser}
+      DB_PASSWORD: ${DB_PASSWORD:-devpass}
+      # 管理者ログイン（1人だけ）。本番はサーバー側で設定し、この既定値は使わないこと
+      ADMIN_USER: ${ADMIN_USER:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-kasukou-dev}
+      # コート中止連絡の合言葉。本番はサーバー側で設定し、この値は使わないこと
+      CANCEL_PASSWORD: ${CANCEL_PASSWORD:-kasukou-dev}
+      # 問い合わせフォームの通知先と差出人。両方そろって初めてメールを送る
+      CONTACT_TO: ${CONTACT_TO:-}
+      CONTACT_FROM: ${CONTACT_FROM:-}
+      # SMTP 認証の設定。3つそろえば SMTP、空なら sendmail 経由（開発では通常空）
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
     working_dir: /var/www/api
     volumes:
       - ./api:/var/www/api

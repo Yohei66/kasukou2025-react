@@ -1,8 +1,12 @@
 <?php
-$host = 'db';
-$db   = 'devdb';
-$user = 'devuser';
-$pass = 'devpass';
+require_once __DIR__ . '/config_load.php';
+
+// 既定値は開発環境（Docker Compose）のもの。
+// 本番・試験サーバーでは config.php に実際の値を書いて上書きする。
+$host = config_value('DB_HOST', 'db');
+$db   = config_value('DB_NAME', 'devdb');
+$user = config_value('DB_USER', 'devuser');
+$pass = config_value('DB_PASSWORD', 'devpass');
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
